@@ -316,7 +316,7 @@ class SQLOutput(Output):
                 self._to_string(table),
                 self._to_string(column),
                 self._to_string(field.help),
-                self._to_string(field.type),
+                self._to_string(field.fieldtype),
                 self._to_string("," if field.thousands_sep else ""),
                 field.digits,
             )
