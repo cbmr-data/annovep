@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 
 import pydantic
 import ruamel.yaml
-from pydantic import ConfigDict, Field, RootModel, ValidationError
+from pydantic import ConfigDict, Field, RootModel, ValidationError, model_validator
 from typing_extensions import Annotated, Literal, override
 
 from annovep.resources import access_resources
@@ -27,21 +27,21 @@ class BaseModel(pydantic.BaseModel):
 
 class Column(BaseModel):
     name: str = Field(alias="Name")
-    fieldtype: str = Field(alias="FieldType", default="str")
+    fieldtype: Optional[str] = Field(alias="FieldType", default=None)
     help: Optional[str] = Field(alias="Help", default=None)
     # Normalize lists of items using this separator
     split_by: Optional[str] = Field(alias="SplitBy", default=None)
     # Enable thousands separator
-    thousands_sep: bool = Field(alias="ThousandsSep", default=False)
+    thousands_sep: Optional[bool] = Field(alias="ThousandsSep", default=None)
     # Floating point precision (int/float only)
-    digits: int = Field(alias="Digits", default=-1)
+    digits: Optional[int] = Field(alias="Digits", default=None)
 
 
 class AnnotationBase(BaseModel):
     _name: Optional[str] = None
     rank: int = Field(alias="Rank", default=0)
     fieldtype: str = Field(alias="FieldType", default="str")
-    thousandssep: str = Field(alias="ThousandsSep", default="")
+    thousands_sep: bool = Field(alias="ThousandsSep", default=False)
     digits: int = Field(alias="Digits", default=-1)
     fields: Dict[str, Column] = Field(alias="Fields", default_factory=dict)
     enabled: bool = Field(alias="Enabled", default=True)
@@ -61,6 +61,18 @@ class AnnotationBase(BaseModel):
     @property
     def params(self) -> List[str]:
         return []
+
+    @model_validator(mode="after")
+    def set_column_defaults(self) -> AnnotationBase:
+        for field in self.fields.values():
+            if field.fieldtype is None:
+                field.fieldtype = self.fieldtype
+            if field.thousands_sep is None:
+                field.thousands_sep = self.thousands_sep
+            if field.digits is None:
+                field.digits = self.digits
+
+        return self
 
 
 class Option(AnnotationBase):
@@ -166,8 +178,8 @@ def _apply_variables(
     variables: Dict[str, Union[str, Path]],
 ) -> list[str]:
     result: list[str] = []
+    last_value: str | None = None
     for value in values:
-        last_value: str | None = None
         while value != last_value:
             last_value = value
             value = value.format_map(variables)
