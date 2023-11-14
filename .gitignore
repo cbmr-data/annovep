@@ -1,8 +1,10 @@
 .vscode/
 binaries/*.gz
 
-venv
 __pycache__
+build
+venv
+*.egg-info
 *.pyc
 
 pipeline/_version.py
