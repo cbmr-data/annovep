@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import json
 import logging
+import pprint
 import re
 from pathlib import Path
-from typing import Iterator
+from typing import Dict, Iterator, List, Optional, Union
 
-from typing_extensions import TypedDict
+from pydantic import BaseModel, Field, ValidationError
+from typing_extensions import Literal, TypedDict
 
 from annovep.utils import open_rb
 
@@ -14,14 +15,71 @@ from annovep.utils import open_rb
 class VEPRecord(TypedDict):
     Chr: str
     Pos: int
-    ID: list[str]
+    ID: List[str]
     Ref: str
-    Alts: list[str]
-    Quality: None | float
-    Filters: list[str]
-    Info: list[str]
-    Samples: list[dict[str, str]]
-    VEP: object
+    Alts: List[str]
+    Quality: float | None
+    Filters: List[str]
+    Info: List[str]
+    Samples: List[Dict[str, str]]
+    VEP: VEPData
+
+
+# Combined transcript / intergenic consequence
+class Consequence(BaseModel):
+    amino_acids: Optional[str] = None
+    cdna_end: Optional[int] = None
+    cdna_start: Optional[int] = None
+    cds_end: Optional[int] = None
+    cds_start: Optional[int] = None
+    codons: Optional[str] = None
+    consequence_terms: List[str] = Field(default_factory=list)
+    gene_id: Optional[str] = None
+    impact: Optional[str] = None
+    protein_end: Optional[int] = None
+    protein_start: Optional[int] = None
+    strand: Literal[1, -1] | None = None
+    transcript_id: Optional[str] = None
+    variant_allele: Optional[str] = None
+    canonical: Optional[int] = None
+
+    # Custom fields
+    n_most_significant: int = Field(default=0, alias="::annovep::1")
+    most_significant: tuple[str, ...] = Field(default=(), alias="::annovep::2")
+    most_significant_canonical: Optional[str] = Field(
+        default=None, alias="::annovep::3"
+    )
+    least_significant: Optional[str] = Field(default=None, alias="::annovep::4")
+
+    cdna_position: Optional[str] = Field(default=None, alias="::annovep::5")
+    cds_position: Optional[str] = Field(default=None, alias="::annovep::6")
+    protein_position: Optional[str] = Field(default=None, alias="::annovep::7")
+
+
+class Custom(BaseModel):
+    allele: str
+    name: str
+    fields: Dict[str, Union[str, int, float]]
+
+
+class VEPData(BaseModel):
+    start: int
+    strand: int
+    # "most_severe_consequence": "?",
+    end: int
+    seq_region_name: str
+    assembly_name: str
+    id: str
+    allele_string: str
+    input: str
+
+    transcript_consequences: List[Consequence] = Field(default_factory=list)
+    intergenic_consequences: List[Consequence] = Field(default_factory=list)
+    custom_annotations: Dict[str, List[Custom]] = Field(default_factory=dict)
+
+
+class MetaData(TypedDict):
+    samples: list[str]
 
 
 class VEPReader:
@@ -33,8 +91,8 @@ class VEPReader:
         self.metadata = self._read_metadata()
         self.timestamp = filename.stat().st_mtime
 
-    def _read_metadata(self):
-        metadata = {}
+    def _read_metadata(self) -> MetaData:
+        metadata: MetaData = {"samples": []}
         for line in self._handle:
             record = self._read_record(line)
             record_id = ";".join(record["ID"])
@@ -58,14 +116,18 @@ class VEPReader:
         # an expected string value was -nan. Python accepts "NaN", but null seems
         # more reasonable for downstream compatibility
         line = nan_re.sub(b":null", line)
-        data = json.loads(line)
+        try:
+            data = VEPData.model_validate_json(line)
+        except ValidationError as error:
+            self._log.error("invalid record(s):\n%s", pprint.pformat(error.errors()))
+            raise SystemExit(1)
 
-        vcf_record = data["input"]
+        vcf_record = data.input
         fields = vcf_record.rstrip("\r\n").split("\t")
         chr, pos, id, ref, alt, qual, filters, info, *fmt_and_samples = fields
         chr = decode_contig_name(chr)
 
-        data["input"] = "\t".join((chr, pos, id, ref, alt, qual, filters, info))
+        data.input = "\t".join((chr, pos, id, ref, alt, qual, filters, info))
 
         samples: list[dict[str, str]] = []
         if fmt_and_samples:
