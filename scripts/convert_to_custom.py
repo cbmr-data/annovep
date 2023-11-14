@@ -667,7 +667,6 @@ def main(argv: list[str]) -> int:
         level="INFO",
         datefmt="%Y-%m-%d %H:%M:%S",
         fmt="%(asctime)s %(levelname)s %(message)s",
-        format="%(asctime)s %(levelname)s %(message)s",
     )
 
     log = logging.getLogger("__main__")
