@@ -7,7 +7,7 @@ import subprocess
 import sys
 from typing import IO, AnyStr
 
-from annovep.annotation import Annotations
+from annovep.annotation import Annotation
 from annovep.utils import cmd_to_str, join_procs, update_required
 
 
@@ -44,7 +44,7 @@ def exec_self(
 def run_vep(
     args: argparse.Namespace,
     log: logging.Logger,
-    annotations: list[Annotations],
+    annotations: list[Annotation],
 ) -> bool:
     command = [
         "vep",
@@ -135,7 +135,7 @@ def run_post_proc(args: argparse.Namespace, log: logging.Logger) -> bool:
     return join_procs(log, [proc])
 
 
-def main(args: argparse.Namespace, annotations: list[Annotations]) -> int:
+def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
     log = logging.getLogger("annovep")
 
     any_errors = False

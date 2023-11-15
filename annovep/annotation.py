@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import pydantic
 import ruamel.yaml
-from pydantic import ConfigDict, Field, RootModel, ValidationError, model_validator
-from typing_extensions import Annotated, Literal, override
+from pydantic import ConfigDict, Field, RootModel, ValidationError
+from typing_extensions import Annotated, Literal, TypeAlias, override
 
 from annovep.resources import access_resources
 
@@ -17,147 +18,214 @@ _BUILTINS = {
 }
 
 
+FieldType: TypeAlias = Literal["str", "int", "float"]
+
+VariablesType: TypeAlias = Dict[str, Union[str, Path]]
+
+
 class AnnotationError(Exception):
     pass
+
+
+########################################################################################
+# Annotation parsing and validation
 
 
 class BaseModel(pydantic.BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class Column(BaseModel):
+class _AnnotationFieldModel(BaseModel):
     name: str = Field(alias="Name")
-    fieldtype: Optional[str] = Field(alias="FieldType", default=None)
+    fieldtype: Optional[FieldType] = Field(alias="FieldType", default=None)
     help: Optional[str] = Field(alias="Help", default=None)
     # Normalize lists of items using this separator
     split_by: Optional[str] = Field(alias="SplitBy", default=None)
     # Enable thousands separator
-    thousands_sep: Optional[bool] = Field(alias="ThousandsSep", default=None)
+    thousands_sep: bool = Field(alias="ThousandsSep", default=False)
     # Floating point precision (int/float only)
     digits: Optional[int] = Field(alias="Digits", default=None)
 
 
-class AnnotationBase(BaseModel):
-    _name: Optional[str] = None
+class _AnnotationBaseModel(BaseModel):
     rank: int = Field(alias="Rank", default=0)
-    fieldtype: str = Field(alias="FieldType", default="str")
-    thousands_sep: bool = Field(alias="ThousandsSep", default=False)
+    fieldtype: FieldType = Field(alias="FieldType", default="str")
     digits: int = Field(alias="Digits", default=-1)
-    fields: Dict[str, Column] = Field(alias="Fields", default_factory=dict)
-    enabled: bool = Field(alias="Enabled", default=True)
+    fields: Dict[str, _AnnotationFieldModel] = Field(
+        alias="Fields", default_factory=dict
+    )
+    enabled: Literal[True, False, "mandatory"] = Field(alias="Enabled", default=True)
+    options: List[str] = Field(alias="Command", default_factory=list)
 
-    def apply_variables(self, variables: Dict[str, Union[str, Path]]) -> None:
-        ...
+    def to_annotation(
+        self,
+        *,
+        name: str,
+        variables: VariablesType,
+    ) -> Annotation:
+        return Annotation(
+            type=self._get_type(),
+            name=name,
+            rank=self.rank,
+            fields=self._get_fields(),
+            enabled=self.enabled,
+            files=self._get_files(variables=variables),
+            params=self._get_options(name=name, variables=variables),
+        )
 
-    @property
-    def name(self) -> str:
-        if self._name is None:
-            raise AssertionError(self)
-        return self._name
+    def _get_fields(self) -> dict[str, AnnotationField]:
+        result: dict[str, AnnotationField] = {}
+        for key, field in self.fields.items():
+            result[key] = AnnotationField(
+                name=field.name,
+                type=self.fieldtype if field.fieldtype is None else field.fieldtype,
+                help=field.help,
+                split_by=field.split_by,
+                thousands_sep=field.thousands_sep,
+                digits=self.digits if field.digits is None else field.digits,
+            )
 
-    def set_name(self, name: str) -> None:
-        self._name = name
+        return result
 
-    @property
-    def params(self) -> List[str]:
+    def _get_type(self) -> AnnotationTypes:
+        raise NotImplementedError()
+
+    def _get_files(self, *, variables: VariablesType) -> list[str]:
         return []
 
-    @model_validator(mode="after")
-    def set_column_defaults(self) -> AnnotationBase:
-        for field in self.fields.values():
-            if field.fieldtype is None:
-                field.fieldtype = self.fieldtype
-            if field.thousands_sep is None:
-                field.thousands_sep = self.thousands_sep
-            if field.digits is None:
-                field.digits = self.digits
-
-        return self
+    def _get_options(self, *, name: str, variables: VariablesType) -> list[str]:
+        return self.options
 
 
-class Option(AnnotationBase):
+class _BasicAnnotationModel(_AnnotationBaseModel):
     type: Literal["Option"] = Field(..., alias="Type")
-    command: List[str] = Field(alias="Command")
 
-    @property
-    def files(self) -> list[str]:
-        return []
+    @override
+    def _get_type(self) -> AnnotationTypes:
+        return "basic"
 
 
-class Plugin(AnnotationBase):
+class _PluginModel(_AnnotationBaseModel):
     type: Literal["Plugin"] = Field(..., alias="Type")
     files: List[str] = Field(alias="Files")
     parameters: List[str] = Field(alias="Parameters")
     variables: Dict[str, str] = Field(alias="Variables", default_factory=dict)
 
     @override
-    def apply_variables(self, variables: Dict[str, Union[str, Path]]) -> None:
+    def _get_type(self) -> AnnotationTypes:
+        return "plugin"
+
+    @override
+    def _get_files(self, *, variables: VariablesType) -> list[str]:
         variables = dict(variables)
         variables.update(self.variables)
 
-        self.files = _apply_variables(self.files, variables)
-        self.parameters = _apply_variables(self.parameters, variables)
+        return _apply_variables(self.files, variables)
 
-    @property
-    def params(self) -> List[str]:
-        params: List[str] = [self.name]
-        params.extend(self.parameters)
+    @override
+    def _get_options(self, *, name: str, variables: VariablesType) -> list[str]:
+        variables = dict(variables)
+        variables.update(self.variables)
+        parameters = _apply_variables(self.parameters, variables)
 
-        return ["--plugin", ",".join(params)]
+        return [*self.options, "--plugin", ",".join([name, *parameters])]
 
 
-class Custom(AnnotationBase):
+class _CustomModel(_AnnotationBaseModel):
     type: Literal["BED", "VCF"] = Field(..., alias="Type")
     mode: Literal["exact", "overlap"] = Field(..., alias="Mode")
     file: str = Field(..., alias="File")
     variables: Dict[str, str] = Field(alias="Variables", default_factory=dict)
 
-    @property
-    def files(self) -> List[str]:
-        return [self.file, f"{self.file}.tbi"]
+    @override
+    def _get_type(self) -> AnnotationTypes:
+        return "custom"
 
     @override
-    def apply_variables(self, variables: Dict[str, Union[str, Path]]) -> None:
+    def _get_files(self, *, variables: VariablesType) -> list[str]:
         variables = dict(variables)
         variables.update(self.variables)
 
-        (self.file,) = _apply_variables([self.file], variables)
+        return _apply_variables([self.file, f"{self.file}.tbi"], variables)
 
-    @property
-    def params(self) -> List[str]:
-        params = [self.file, self.name, self.type, self.mode, "0"]
+    @override
+    def _get_options(self, *, name: str, variables: VariablesType) -> list[str]:
+        file, _ = self._get_files(variables=variables)
+        options = [*self.options, "--custom"]
+        params = [file, name, self.type, self.mode, "0"]
         for name in self.fields:
             if not (name.startswith(":") and name.endswith(":")):
                 params.append(name)
 
-        return ["--custom", ",".join(params)]
+        options.append(",".join(params))
+        return options
 
 
-class Builtin(AnnotationBase):
+class _BuiltinModel(_AnnotationBaseModel):
     type: Literal["Builtin"] = Field(..., alias="Type")
 
-    @property
-    def files(self) -> list[str]:
-        return []
-
     @override
-    def set_name(self, name: str) -> None:
+    def to_annotation(
+        self,
+        *,
+        name: str,
+        variables: VariablesType,
+    ) -> Annotation:
         builtin_name = _BUILTINS.get(name.lower())
         if builtin_name is None:
             raise ValueError(f"unknown built-in annotation {name!r}")
 
-        super().set_name(builtin_name)
+        return super().to_annotation(name=name, variables=variables)
+
+    @override
+    def _get_type(self) -> AnnotationTypes:
+        return "builtin"
 
 
-Annotations = Annotated[
-    Union[Option, Plugin, Custom, Builtin], Field(discriminator="type")
+_Annotations = Annotated[
+    Union[_BasicAnnotationModel, _PluginModel, _CustomModel, _BuiltinModel],
+    Field(discriminator="type"),
 ]
 
-AnnotationsDict = Dict[str, Annotations]
+_AnnotationsDict = Dict[str, _Annotations]
 
 
-class _Root(RootModel[AnnotationsDict]):
-    root: AnnotationsDict
+class _Root(RootModel[_AnnotationsDict]):
+    root: _AnnotationsDict
+
+
+########################################################################################
+# Simplified user-facing models
+
+
+@dataclass
+class AnnotationField:
+    name: str
+    type: FieldType
+    help: Optional[str]
+    # Normalize lists of items using this separator
+    split_by: Optional[str] = None
+    # Enable thousands separator
+    thousands_sep: bool = False
+    # Floating point precision (int/float only)
+    digits: int = -1
+
+
+AnnotationTypes: TypeAlias = Literal["basic", "custom", "builtin", "plugin"]
+
+
+@dataclass
+class Annotation:
+    type: AnnotationTypes
+    name: str
+    rank: int
+    fields: Dict[str, AnnotationField]
+    enabled: Literal[True, False, "mandatory"]
+    files: list[str]
+    params: List[str]
+
+
+########################################################################################
 
 
 def _collect_yaml_files(filepaths: List[Path]) -> List[Path]:
@@ -192,11 +260,11 @@ def load_annotations(
     log: logging.Logger,
     filepaths: List[Path],
     variables: Dict[str, Union[str, Path]],
-) -> List[Annotations]:
+) -> List[Annotation]:
     yaml = ruamel.yaml.YAML(typ="safe", pure=True)
     yaml.version = (1, 1)
 
-    annotations: Dict[str, Annotations] = {}
+    annotations: Dict[str, Annotation] = {}
     with access_resources("annotations") as built_in:
         for filepath in _collect_yaml_files([built_in, *filepaths]):
             log.info("reading annotation settings from %s", filepath)
@@ -222,12 +290,10 @@ def load_annotations(
                 raise AssertionError("should not happen")
 
             for name, obj in result.root.items():
-                if name in annotations:
+                annotation = obj.to_annotation(name=name, variables=dict(variables))
+                if annotation.name in annotations:
                     log.warning("Overriding settings for annotations %r", name)
 
-                obj.set_name(name)
-                obj.apply_variables(variables)
-
-                annotations[name] = obj
+                annotations[name] = annotation
 
     return sorted(annotations.values(), key=lambda it: it.rank)

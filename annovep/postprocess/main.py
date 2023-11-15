@@ -9,10 +9,10 @@ from annovep.postprocess.annotations import Annotator
 from annovep.postprocess.reader import VEPReader
 
 if TYPE_CHECKING:
-    from annovep.annotation import Annotations
+    from annovep.annotation import Annotation
 
 
-def main(args: argparse.Namespace, annotations: list[Annotations]) -> int:
+def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
     if not any(fmt.startswith("sql") for fmt in args.output_format):
         args.include_json = False
 

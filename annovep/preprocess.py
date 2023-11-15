@@ -4,7 +4,7 @@ import argparse
 import logging
 import re
 
-from annovep.annotation import Annotations
+from annovep.annotation import Annotation
 from annovep.utils import open_ro
 
 _RE_CONTIG_ID = re.compile("^(##contig=<.*ID=)([^,]+)(.*>)$", re.I)
@@ -34,7 +34,7 @@ def is_valid(sequence: str, whitelist: str = "ACGTNacgtn.,*"):
     return not set(sequence).difference(whitelist)
 
 
-def main(args: argparse.Namespace, anotations: list[Annotations]) -> int:
+def main(args: argparse.Namespace, anotations: list[Annotation]) -> int:
     n_decoys = 0
     n_bad_contigs = 0
     n_bad_contigs_vcf = 0

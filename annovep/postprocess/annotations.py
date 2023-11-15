@@ -3,12 +3,12 @@ from __future__ import annotations
 import collections
 import functools
 import re
-from typing import Any, Dict, Generator
+from typing import Any, Dict, Generator, Union
 
 import liftover
 from typing_extensions import TypeAlias, TypedDict
 
-from annovep.annotation import Annotations, Builtin, Column, Custom, Option, Plugin
+from annovep.annotation import Annotation, AnnotationField
 from annovep.postprocess import consequences
 from annovep.postprocess.reader import Consequence, MetaData, VEPData, VEPRecord
 
@@ -22,13 +22,13 @@ class VEPAllele(TypedDict):
     alleles: str
 
 
-OutputDict: TypeAlias = Dict[str, int | str | float | None]
+OutputDict: TypeAlias = Dict[str, Union[int, str, float, None]]
 
 
 class Annotator:
     def __init__(
         self,
-        annotations: list[Annotations],
+        annotations: list[Annotation],
         metadata: MetaData | None = None,
         liftover_cache: str | None = None,
     ) -> None:
@@ -39,24 +39,21 @@ class Annotator:
         if metadata is not None:
             self._apply_metadata(metadata)
 
-        self.fields: dict[str, Column] = collections.OrderedDict()
+        self.fields: dict[str, AnnotationField] = collections.OrderedDict()
         for annotation in self.groups:
             for field in annotation.fields.values():
                 self.fields[field.name] = field
 
     def _apply_metadata(self, metadata: MetaData) -> None:
         for annotation in self.groups:
-            if isinstance(annotation, Builtin):
+            if annotation.type == "builtin":
                 if annotation.name.lower() == "samplegenotypes":
                     annotation.fields = {}
                     for sample in metadata["samples"]:
-                        annotation.fields[sample] = Column(
-                            Name=f"GTS_{sample}",
-                            FieldType="str",
-                            Help=f"Genotypes for {sample!r}",
-                            SplitBy=None,
-                            ThousandsSep=False,
-                            Digits=-1,
+                        annotation.fields[sample] = AnnotationField(
+                            name=f"GTS_{sample}",
+                            type="str",
+                            help=f"Genotypes for {sample!r}",
                         )
                 else:
                     raise NotImplementedError(
@@ -315,7 +312,7 @@ class Annotator:
         copy: dict[str, Any],
     ) -> None:
         for annotation in self.groups:
-            if isinstance(annotation, (Option, Plugin)):
+            if annotation.type == "basic" or annotation.type == "plugin":
                 for key, field in annotation.fields.items():
                     if key not in copy:
                         # Consequence annoation should be explicitly marked
@@ -323,7 +320,7 @@ class Annotator:
 
     def _add_custom_annotation(self, src: VEPData, dst: dict[str, Any]) -> None:
         for annotation in self.groups:
-            if isinstance(annotation, Custom):
+            if annotation.type == "custom":
                 data: dict[str, str | int | float] = {}
 
                 alt = dst[":vep:"]["alt"]
@@ -336,7 +333,7 @@ class Annotator:
                         break
 
                 numeric_values: list[int | float] = []
-                derived_values: list[tuple[str, Column]] = []
+                derived_values: list[tuple[str, AnnotationField]] = []
 
                 for key, field in annotation.fields.items():
                     if key in (":min:", ":max:"):
@@ -347,7 +344,7 @@ class Annotator:
                         if field.split_by is not None:
                             assert value is None or isinstance(value, str)
                             value = [] if value is None else value.split(field.split_by)
-                        elif value is not None and field.fieldtype in ("int", "float"):
+                        elif value is not None and field.type in ("int", "float"):
                             assert isinstance(value, (int, float))
                             numeric_values.append(value)
 
@@ -365,7 +362,7 @@ class Annotator:
 
     def _add_builtin_annotation(self, src: VEPData, dst: dict[str, Any]) -> None:
         for annotation in self.groups:
-            if isinstance(annotation, Builtin):
+            if annotation.type == "builtin":
                 if annotation.name.lower() == "samplegenotypes":
                     self._add_sample_genotypes(annotation, src, dst)
                 else:
@@ -373,7 +370,7 @@ class Annotator:
 
     def _add_sample_genotypes(
         self,
-        annotation: Builtin,
+        annotation: Annotation,
         src: VEPData,
         dst: dict[str, Any],
     ) -> None:

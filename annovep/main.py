@@ -8,7 +8,7 @@ from typing import Sequence
 
 import coloredlogs
 
-from annovep.annotation import AnnotationError, Annotations, load_annotations
+from annovep.annotation import Annotation, AnnotationError, load_annotations
 from annovep.pipeline import main as pipeline_main
 from annovep.postprocess import main as postprocess_main
 from annovep.preprocess import main as preprocess_main
@@ -40,10 +40,10 @@ class DisableAction(argparse.Action):
 
 def filter_annotations(
     log: logging.Logger,
-    annotations: list[Annotations],
+    annotations: list[Annotation],
     enabled: dict[str, bool],
 ) -> bool:
-    result: list[Annotations] = []
+    result: list[Annotation] = []
     names: set[str] = set()
     for annotation in annotations:
         name = annotation.name
