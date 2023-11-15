@@ -30,6 +30,7 @@ RUN mkdir -p /data/cache && touch /data/cache/not_mounted
 RUN mkdir -p /data/user && touch /data/user/not_mounted
 
 COPY ./annovep /opt/annovep/annovep/
+COPY ./MANIFEST.in /opt/annovep/
 COPY ./scripts/ /opt/annovep/scripts/
 COPY ./setup.py /opt/annovep/
 RUN python3.7 -m pip install /opt/annovep/
