@@ -4,10 +4,10 @@ import logging
 import pprint
 import re
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, ValidationError
-from typing_extensions import Literal, TypedDict
+from pydantic import BaseModel, BeforeValidator, Field, ValidationError
+from typing_extensions import Annotated, Literal, TypedDict
 
 from annovep.utils import open_rb
 
@@ -18,7 +18,7 @@ class VEPRecord(TypedDict):
     ID: List[str]
     Ref: str
     Alts: List[str]
-    Quality: float | None
+    Quality: Optional[float]
     Filters: List[str]
     Info: List[str]
     Samples: List[Dict[str, str]]
@@ -38,14 +38,14 @@ class Consequence(BaseModel):
     impact: Optional[str] = None
     protein_end: Optional[int] = None
     protein_start: Optional[int] = None
-    strand: Literal[1, -1] | None = None
+    strand: Optional[Literal[1, -1]] = None
     transcript_id: Optional[str] = None
     variant_allele: Optional[str] = None
     canonical: Optional[int] = None
 
     # Custom fields
     n_most_significant: int = Field(default=0, alias="::annovep::1")
-    most_significant: tuple[str, ...] = Field(default=(), alias="::annovep::2")
+    most_significant: Tuple[str, ...] = Field(default=(), alias="::annovep::2")
     most_significant_canonical: Optional[str] = Field(
         default=None, alias="::annovep::3"
     )
@@ -57,9 +57,10 @@ class Consequence(BaseModel):
 
 
 class Custom(BaseModel):
-    allele: str
-    name: str
-    fields: Dict[str, Union[str, int, float]]
+    # Some custom annotations use names that are interpreted as int (ClinVar)
+    name: Annotated[str, BeforeValidator(lambda value: str(value))]
+    allele: Optional[str] = None
+    fields: Dict[str, Union[str, int, float]] = Field(default_factory=dict)
 
 
 class VEPData(BaseModel):
@@ -117,7 +118,7 @@ class VEPReader:
         # more reasonable for downstream compatibility
         line = nan_re.sub(b":null", line)
         try:
-            data = VEPData.model_validate_json(line)
+            data = VEPData.model_validate_json(line, strict=True)
         except ValidationError as error:
             self._log.error("invalid record(s):\n%s", pprint.pformat(error.errors()))
             raise SystemExit(1)
