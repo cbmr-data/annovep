@@ -448,7 +448,7 @@ class Annotator:
 
         dst["Genes_overlapping"] = sorted(neighbours_overlap)
         dst["Genes_upstream"] = _to_list(neighbours_upstream)
-        dst["Genes_downstream"] = sorted(neighbours_downstream)
+        dst["Genes_downstream"] = _to_list(neighbours_downstream)
 
     def _add_liftover_annotations(self, vep: VEPRecord, row: dict[str, Any]) -> None:
         src_chr = vep["Chr"]
