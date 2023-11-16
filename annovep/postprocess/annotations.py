@@ -39,22 +39,23 @@ class Annotator:
         if metadata is not None:
             self._apply_metadata(metadata)
 
-        self.fields: dict[str, AnnotationField] = collections.OrderedDict()
+        self.fields: list[AnnotationField] = []
         for annotation in self.groups:
-            for field in annotation.fields.values():
-                self.fields[field.name] = field
+            self.fields.extend(annotation.fields)
 
     def _apply_metadata(self, metadata: MetaData) -> None:
         for annotation in self.groups:
             if annotation.type == "builtin":
                 if annotation.name.lower() == "samplegenotypes":
-                    annotation.fields = {}
-                    for sample in metadata["samples"]:
-                        annotation.fields[sample] = AnnotationField(
-                            name=f"GTS_{sample}",
+                    annotation.fields = [
+                        AnnotationField(
+                            input_key=sample,
+                            output_key=f"GTS_{sample}",
                             type="str",
                             help=f"Genotypes for {sample!r}",
                         )
+                        for sample in metadata["samples"]
+                    ]
                 else:
                     raise NotImplementedError(
                         f"{annotation.name} not a builtin annotation"
@@ -313,10 +314,12 @@ class Annotator:
     ) -> None:
         for annotation in self.groups:
             if annotation.type == "basic" or annotation.type == "plugin":
-                for key, field in annotation.fields.items():
-                    if key not in copy:
+                for field in annotation.fields:
+                    if field.output_key not in copy:
                         # Consequence annoation should be explicitly marked
-                        copy[field.name] = getattr(consequence, key, None)
+                        copy[field.output_key] = getattr(
+                            consequence, field.input_key, None
+                        )
 
     def _add_custom_annotation(self, src: VEPData, dst: dict[str, Any]) -> None:
         for annotation in self.groups:
@@ -335,11 +338,11 @@ class Annotator:
                 numeric_values: list[int | float] = []
                 derived_values: list[tuple[str, AnnotationField]] = []
 
-                for key, field in annotation.fields.items():
-                    if key in (":min:", ":max:"):
-                        derived_values.append((key, field))
+                for field in annotation.fields:
+                    if field.input_key in (":min:", ":max:"):
+                        derived_values.append((field.input_key, field))
                     else:
-                        value = data.get(key)
+                        value = data.get(field.input_key)
 
                         if field.split_by is not None:
                             assert value is None or isinstance(value, str)
@@ -348,7 +351,7 @@ class Annotator:
                             assert isinstance(value, (int, float))
                             numeric_values.append(value)
 
-                        dst[field.name] = value
+                        dst[field.output_key] = value
 
                 for key, field in derived_values:
                     if key == ":min:":
@@ -358,7 +361,7 @@ class Annotator:
                     else:
                         raise NotImplementedError(key)
 
-                    dst[field.name] = value
+                    dst[field.output_key] = value
 
     def _add_builtin_annotation(self, src: VEPData, dst: dict[str, Any]) -> None:
         for annotation in self.groups:

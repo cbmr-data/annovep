@@ -73,19 +73,19 @@ class _AnnotationBaseModel(BaseModel):
             params=self._get_options(name=name, variables=variables),
         )
 
-    def _get_fields(self) -> dict[str, AnnotationField]:
-        result: dict[str, AnnotationField] = {}
-        for key, field in self.fields.items():
-            result[key] = AnnotationField(
-                name=field.name,
+    def _get_fields(self) -> list[AnnotationField]:
+        return [
+            AnnotationField(
+                input_key=key,
+                output_key=field.name,
                 type=self.fieldtype if field.fieldtype is None else field.fieldtype,
                 help=field.help,
                 split_by=field.split_by,
                 thousands_sep=field.thousands_sep,
                 digits=self.digits if field.digits is None else field.digits,
             )
-
-        return result
+            for key, field in self.fields.items()
+        ]
 
     def _get_type(self) -> AnnotationTypes:
         raise NotImplementedError()
@@ -95,6 +95,9 @@ class _AnnotationBaseModel(BaseModel):
 
     def _get_options(self, *, name: str, variables: VariablesType) -> list[str]:
         return self.options
+
+    def _get_path(self, *, group_name: str, field_name: str) -> tuple[str]:
+        return (field_name,)
 
 
 class _BasicAnnotationModel(_AnnotationBaseModel):
@@ -200,7 +203,8 @@ class _Root(RootModel[_AnnotationsDict]):
 
 @dataclass
 class AnnotationField:
-    name: str
+    input_key: str
+    output_key: str
     type: FieldType
     help: Optional[str]
     # Normalize lists of items using this separator
@@ -219,7 +223,7 @@ class Annotation:
     type: AnnotationTypes
     name: str
     rank: int
-    fields: Dict[str, AnnotationField]
+    fields: List[AnnotationField]
     enabled: Literal[True, False, "mandatory"]
     files: list[str]
     params: List[str]

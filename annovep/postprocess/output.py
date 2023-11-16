@@ -71,7 +71,10 @@ class JSONOutput(Output):
         super().__init__(annotations, out_prefix, ".json")
 
     def process_row(self, data) -> None:
-        json.dump({key: data[key] for key in self.fields}, self._handle)
+        json.dump(
+            {field.output_key: data[field.output_key] for field in self.fields},
+            self._handle,
+        )
         self._handle.write("\n")
 
 
@@ -79,17 +82,17 @@ class TSVOutput(Output):
     def __init__(self, annotations: Annotator, out_prefix: str | None):
         super().__init__(annotations, out_prefix, ".tsv")
 
-        self._print("#{}", "\t".join(self.fields))
+        self._print("#{}", "\t".join([field.output_key for field in self.fields]))
 
         if out_prefix is not None:
             with open(f"{out_prefix}.tsv.columns", "wt") as handle:
                 print("Name\tDescription", file=handle)
 
-                for name, field in self.fields.items():
-                    print(name, field.help, sep="\t", file=handle)
+                for field in self.fields:
+                    print(field.output_key, field.help, sep="\t", file=handle)
 
     def process_row(self, data):
-        row = [self._to_string(data[key]) for key in self.fields]
+        row = [self._to_string(data[field.output_key]) for field in self.fields]
 
         self._print("\t".join(row))
 
@@ -146,7 +149,8 @@ class SQLOutput(Output):
             "    [pk] INTEGER PRIMARY KEY ASC",
         ]
 
-        for key, field in self.fields.items():
+        for field in self.fields:
+            key = field.output_key
             datatype = "TEXT"
             if key in CONSEQUENCE_COLUMNS:
                 key = f"{key}_id"
@@ -243,7 +247,7 @@ class SQLOutput(Output):
             data[key] = value
 
         values = [str(self._n_row)]
-        values.extend(self._to_string(data[key]) for key in self.fields)
+        values.extend(self._to_string(data[field.output_key]) for field in self.fields)
 
         self._print("INSERT INTO [Annotations] VALUES ({});", ", ".join(values))
 
@@ -298,9 +302,9 @@ class SQLOutput(Output):
             """
         )
 
-        for pk, (key, field) in enumerate(self.fields.items()):
+        for pk, field in enumerate(self.fields):
             # Rename columns for SQL output only
-            key = self.COLUMN_MAPPING.get(key, key)
+            key = self.COLUMN_MAPPING.get(field.output_key, field.output_key)
 
             table = "Annotations"
             column = key
