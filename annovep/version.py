@@ -1,10 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf8 -*-
+def _get_version() -> str:
+    try:
+        from annovep._version import VERSION
+    except ModuleNotFoundError:
+        return "Undefined"
+    else:
+        return VERSION
 
-try:
-    from annovep._version import VERSION
-except ModuleNotFoundError:
-    VERSION = "Undefined"
+
+VERSION = _get_version()
 
 __all__ = [
     "VERSION",
