@@ -247,8 +247,12 @@ class SQLOutput(Output):
         assert isinstance(data["Hg19_chr"], str)
         self._contigs["hg19"][data["Hg19_chr"]] += 1
 
-        assert data["Func_most_significant"] is None or isinstance(data["Func_most_significant"], str)
-        assert data["Func_most_significant_canonical"] is None or isinstance(data["Func_most_significant_canonical"], str)
+        assert data["Func_most_significant"] is None or isinstance(
+            data["Func_most_significant"], str
+        )
+        assert data["Func_most_significant_canonical"] is None or isinstance(
+            data["Func_most_significant_canonical"], str
+        )
 
         # VEP consequence terms
         for key in CONSEQUENCE_COLUMNS:
@@ -264,7 +268,7 @@ class SQLOutput(Output):
 
         self._print("INSERT INTO [Annotations] VALUES ({});", ", ".join(values))
 
-        overlapping_genes = data.get("Genes_overlapping"):
+        overlapping_genes = data.get("Genes_overlapping")
         if overlapping_genes is not None:
             assert isinstance(overlapping_genes, list)
 
