@@ -5,122 +5,131 @@ dbNSFP4:
   Mode: exact
   File: "{data-custom}/dbNSFP4.2a.vcf.gz"
   Fields:
-    "ALSPAC_AC":
+    - Input: "ALSPAC_AC"
       Help: "Alternative allele count in called genotypes in UK10K ALSPAC cohort."
-      Name: "NSFP_ALSPAC_AC"
-    "ALSPAC_AF":
+      Output: "NSFP_ALSPAC_AC"
+    - Input: "ALSPAC_AF"
       Help: "Alternative allele frequency in called genotypes in UK10K ALSPAC cohort."
-      Name: "NSFP_ALSPAC_AF"
-    "APPRIS":
-      Help: "APPRIS annotation for the transcripts matching Ensembl_transcriptid
-        Multiple entries separated by \";\". Potential values: principal1, principal2,
+      Output: "NSFP_ALSPAC_AF"
+    - Input: "APPRIS"
+      Help: 'APPRIS annotation for the transcripts matching Ensembl_transcriptid
+        Multiple entries separated by ";". Potential values: principal1, principal2,
         principal3, principal4, principal5, alternative1, alternative2.  See
-        https://useast.ensembl.org/info/genome/genebuild/transcript_quality_tags.html"
-      Name: "NSFP_APPRIS"
-    "Aloft_Confidence":
-      Help: "Confidence level of Aloft_pred; values can be \"High Confidence\" (p
-        < 0.05) or \"Low Confidence\" (p > 0.05) multiple values separated by \";\",
-        corresponding to Ensembl_proteinid."
-      Name: "NSFP_Aloft_Confidence"
-    "Aloft_Fraction_transcripts_affected":
-      Help: "the fraction of the transcripts of the gene affected i.e. No. of transcripts
+        https://useast.ensembl.org/info/genome/genebuild/transcript_quality_tags.html'
+      Output: "NSFP_APPRIS"
+    - Input: "Aloft_Confidence"
+      Help: 'Confidence level of Aloft_pred; values can be "High Confidence" (p
+        < 0.05) or "Low Confidence" (p > 0.05) multiple values separated by ";",
+        corresponding to Ensembl_proteinid.'
+      Output: "NSFP_Aloft_Confidence"
+    - Input: "Aloft_Fraction_transcripts_affected"
+      Help:
+        'the fraction of the transcripts of the gene affected i.e. No. of transcripts
         affected by the SNP/Total no. of protein_coding transcripts for the gene multiple
-        values separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_Aloft_Fraction_transcripts_affected"
-    "Aloft_pred":
-      Help: "final classification predicted by ALoFT; values can be Tolerant, Recessive
-        or Dominant multiple values separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_Aloft_pred"
-    "Aloft_prob_Dominant":
-      Help: "Probability of the SNP being classified as dominant disease-causing
-        by ALoFT multiple values separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_Aloft_prob_Dominant"
-    "Aloft_prob_Recessive":
-      Help: "Probability of the SNP being classified as recessive disease-causing
-        by ALoFT multiple values separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_Aloft_prob_Recessive"
-    "Aloft_prob_Tolerant":
-      Help: "Probability of the SNP being classified as benign by ALoFT multiple
-        values separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_Aloft_prob_Tolerant"
-    "AltaiNeandertal":
+        values separated by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_Aloft_Fraction_transcripts_affected"
+    - Input: "Aloft_pred"
+      Help:
+        'final classification predicted by ALoFT; values can be Tolerant, Recessive
+        or Dominant multiple values separated by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_Aloft_pred"
+    - Input: "Aloft_prob_Dominant"
+      Help: 'Probability of the SNP being classified as dominant disease-causing
+        by ALoFT multiple values separated by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_Aloft_prob_Dominant"
+    - Input: "Aloft_prob_Recessive"
+      Help:
+        'Probability of the SNP being classified as recessive disease-causing
+        by ALoFT multiple values separated by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_Aloft_prob_Recessive"
+    - Input: "Aloft_prob_Tolerant"
+      Help: 'Probability of the SNP being classified as benign by ALoFT multiple
+        values separated by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_Aloft_prob_Tolerant"
+    - Input: "AltaiNeandertal"
       Help: "genotype of a deep sequenced Altai Neanderthal"
-      Name: "NSFP_AltaiNeandertal"
-    "Ancestral_allele":
-      Help: "ancestral allele based on 8 primates EPO. Ancestral alleles by Ensembl
+      Output: "NSFP_AltaiNeandertal"
+    - Input: "Ancestral_allele"
+      Help:
+        "ancestral allele based on 8 primates EPO. Ancestral alleles by Ensembl
         84. The following comes from its original README file: ACTG - high-confidence
         call, ancestral state supported by the other two sequences actg - low-confidence
         call, ancestral state supported by one sequence only N    - failure, the ancestral
         state is not supported by any other sequence -    - the extant species contains
         an insertion at this position .    - no coverage in the alignment"
-      Name: "NSFP_Ancestral_allele"
-    "BayesDel_addAF_pred":
-      Help: "Prediction of BayesDel_addAF score based on the authors' recommendation,
-        \"T(olerated)\" or \"D(amaging)\". The score cutoff between \"D\" and \"T\"
-        is 0.0692655."
-      Name: "NSFP_BayesDel_addAF_pred"
-    "BayesDel_addAF_rankscore":
-      Help: "BayesDel_addAF scores were ranked among all BayesDel_addAF scores in
+      Output: "NSFP_Ancestral_allele"
+    - Input: "BayesDel_addAF_pred"
+      Help:
+        'Prediction of BayesDel_addAF score based on the authors'' recommendation,
+        "T(olerated)" or "D(amaging)". The score cutoff between "D" and "T"
+        is 0.0692655.'
+      Output: "NSFP_BayesDel_addAF_pred"
+    - Input: "BayesDel_addAF_rankscore"
+      Help:
+        "BayesDel_addAF scores were ranked among all BayesDel_addAF scores in
         dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number of BayesDel_addAF scores in dbNSFP."
-      Name: "NSFP_BayesDel_addAF_rankscore"
-    "BayesDel_addAF_score":
-      Help: "A deleteriousness preidction meta-score for SNVs and indels with inclusion
+      Output: "NSFP_BayesDel_addAF_rankscore"
+    - Input: "BayesDel_addAF_score"
+      Help:
+        'A deleteriousness preidction meta-score for SNVs and indels with inclusion
         of MaxAF. See https://doi.org/10.1002/humu.23158 for details. The range of
         the score in dbNSFP is from -1.11707 to  0.750927. The higher the score, the
         more likely the variant is pathogenic. The author suggested cutoff  between
-        deleterious (\"D\") and tolerated (\"T\") is 0.0692655."
-      Name: "NSFP_BayesDel_addAF_score"
-    "BayesDel_noAF_pred":
-      Help: "Prediction of BayesDel_noAF score based on the authors' recommendation,
-        \"T(olerated)\" or \"D(amaging)\". The score cutoff between \"D\" and \"T\"
-        is -0.0570105."
-      Name: "NSFP_BayesDel_noAF_pred"
-    "BayesDel_noAF_rankscore":
+        deleterious ("D") and tolerated ("T") is 0.0692655.'
+      Output: "NSFP_BayesDel_addAF_score"
+    - Input: "BayesDel_noAF_pred"
+      Help:
+        'Prediction of BayesDel_noAF score based on the authors'' recommendation,
+        "T(olerated)" or "D(amaging)". The score cutoff between "D" and "T"
+        is -0.0570105.'
+      Output: "NSFP_BayesDel_noAF_pred"
+    - Input: "BayesDel_noAF_rankscore"
       Help: "BayesDel_noAF scores were ranked among all BayesDel_noAF scores in
         dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number of BayesDel_noAF scores in dbNSFP."
-      Name: "NSFP_BayesDel_noAF_rankscore"
-    "BayesDel_noAF_score":
-      Help: "A deleteriousness preidction meta-score for SNVs and indels without
+      Output: "NSFP_BayesDel_noAF_rankscore"
+    - Input: "BayesDel_noAF_score"
+      Help: 'A deleteriousness preidction meta-score for SNVs and indels without
         inclusion of MaxAF. See https://doi.org/10.1002/humu.23158 for details. The
         range of the score in dbNSFP is from -1.31914 to 0.840878. The higher the
         score, the more likely the variant is pathogenic. The author suggested cutoff
-        between  deleterious (\"D\") and tolerated (\"T\") is -0.0570105."
-      Name: "NSFP_BayesDel_noAF_score"
-    "CADD_phred":
-      Help: "CADD phred-like score. This is phred-like rank score based on whole
+        between  deleterious ("D") and tolerated ("T") is -0.0570105.'
+      Output: "NSFP_BayesDel_noAF_score"
+    - Input: "CADD_phred"
+      Help: 'CADD phred-like score. This is phred-like rank score based on whole
         genome CADD raw scores. Please refer to Kircher et al. (2014) Nature Genetics
         46(3):310-5  for details. The larger the score the more likely the SNP has
         damaging effect.  Please note the following copyright statement for CADD:
-        \"CADD scores  (http://cadd.gs.washington.edu/) are Copyright 2013 University
+        "CADD scores  (http://cadd.gs.washington.edu/) are Copyright 2013 University
         of Washington and  Hudson-Alpha Institute for Biotechnology (all rights reserved)
         but are freely  available for all academic, non-commercial applications. For
-        commercial licensing  information contact Jennifer McCullar (mccullaj@uw.edu).\""
-      Name: "NSFP_CADD_phred"
-    "CADD_phred_hg19":
-      Help: "CADD phred-like score using the hg19 model. This is phred-like rank
+        commercial licensing  information contact Jennifer McCullar (mccullaj@uw.edu)."'
+      Output: "NSFP_CADD_phred"
+    - Input: "CADD_phred_hg19"
+      Help: 'CADD phred-like score using the hg19 model. This is phred-like rank
         score  based on whole genome CADD raw scores. Please refer to Kircher et al.
         (2014) Nature Genetics  46(3):310-5 for details. The larger the score the
         more likely the SNP has damaging effect.  Please note the following copyright
-        statement for CADD: \"CADD scores  (http://cadd.gs.washington.edu/) are Copyright
+        statement for CADD: "CADD scores  (http://cadd.gs.washington.edu/) are Copyright
         2013 University of Washington and  Hudson-Alpha Institute for Biotechnology
         (all rights reserved) but are freely  available for all academic, non-commercial
         applications. For commercial licensing  information contact Jennifer McCullar
-        (mccullaj@uw.edu).\""
-      Name: "NSFP_CADD_phred_hg19"
-    "CADD_raw":
-      Help: "CADD raw score for functional prediction of a SNP. Please refer to
+        (mccullaj@uw.edu)."'
+      Output: "NSFP_CADD_phred_hg19"
+    - Input: "CADD_raw"
+      Help: 'CADD raw score for functional prediction of a SNP. Please refer to
         Kircher et al. (2014) Nature Genetics 46(3):310-5 for details. The larger
         the score the more likely the SNP has damaging effect. Scores range from -6.458163
         to 18.301497 in dbNSFP.  Please note the following copyright statement for
-        CADD:  \"CADD scores (http://cadd.gs.washington.edu/) are Copyright 2013 University
+        CADD:  "CADD scores (http://cadd.gs.washington.edu/) are Copyright 2013 University
         of  Washington and Hudson-Alpha Institute for Biotechnology (all rights reserved)
         but are  freely available for all academic, non-commercial applications. For
-        commercial  licensing information contact Jennifer McCullar (mccullaj@uw.edu).\""
-      Name: "NSFP_CADD_raw"
-    "CADD_raw_hg19":
-      Help: "CADD raw score for functional prediction of a SNP using the hg19 model.
+        commercial  licensing information contact Jennifer McCullar (mccullaj@uw.edu)."'
+      Output: "NSFP_CADD_raw"
+    - Input: "CADD_raw_hg19"
+      Help:
+        "CADD raw score for functional prediction of a SNP using the hg19 model.
         \ Please refer to Kircher et al. (2014) Nature Genetics 46(3):310-5 for details.
         The  larger the score the more likely the SNP has damaging effect. Scores
         range from  -6.458163 to 18.301497 in dbNSFP. Please note the following copyright
@@ -129,17 +138,18 @@ dbNSFP4:
         (all rights reserved) but are  freely available for all academic, non-commercial
         applications. For commercial  licensing information contact Jennifer McCullar
         (mccullaj@uw.edu).\""
-      Name: "NSFP_CADD_raw_hg19"
-    "CADD_raw_rankscore":
-      Help: "CADD raw scores were ranked among all CADD raw scores in dbNSFP. The
+      Output: "NSFP_CADD_raw_hg19"
+    - Input: "CADD_raw_rankscore"
+      Help:
+        "CADD raw scores were ranked among all CADD raw scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of CADD
         \ raw scores in dbNSFP. Please note the following copyright statement for
         CADD: \"CADD  scores (http://cadd.gs.washington.edu/) are Copyright 2013 University
         of Washington  and Hudson-Alpha Institute for Biotechnology (all rights reserved)
         but are freely  available for all academic, non-commercial applications. For
         commercial licensing  information contact Jennifer McCullar (mccullaj@uw.edu).\""
-      Name: "NSFP_CADD_raw_rankscore"
-    "CADD_raw_rankscore_hg19":
+      Output: "NSFP_CADD_raw_rankscore"
+    - Input: "CADD_raw_rankscore_hg19"
       Help: "CADD raw scores were ranked among all CADD_raw_hg19 in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of CADD
         \ raw scores in dbNSFP. Please note the following copyright statement for
@@ -147,334 +157,368 @@ dbNSFP4:
         of Washington  and Hudson-Alpha Institute for Biotechnology (all rights reserved)
         but are freely  available for all academic, non-commercial applications. For
         commercial licensing  information contact Jennifer McCullar (mccullaj@uw.edu).\""
-      Name: "NSFP_CADD_raw_rankscore_hg19"
-    "ClinPred_pred":
-      Help: "Prediction of ClinPred score based on the authors' recommendation,
-        \"T(olerated)\" or \"D(amaging)\". The score cutoff between \"D\" and \"T\"
-        is 0.5."
-      Name: "NSFP_ClinPred_pred"
-    "ClinPred_rankscore":
-      Help: "ClinPred scores were ranked among all ClinPred scores in dbNSFP. The
+      Output: "NSFP_CADD_raw_rankscore_hg19"
+    - Input: "ClinPred_pred"
+      Help: 'Prediction of ClinPred score based on the authors'' recommendation,
+        "T(olerated)" or "D(amaging)". The score cutoff between "D" and "T"
+        is 0.5.'
+      Output: "NSFP_ClinPred_pred"
+    - Input: "ClinPred_rankscore"
+      Help:
+        "ClinPred scores were ranked among all ClinPred scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of ClinPred
         scores in dbNSFP."
-      Name: "NSFP_ClinPred_rankscore"
-    "ClinPred_score":
-      Help: "A deleteriousness preidction meta-score for nonsynonymous SNVs. See
+      Output: "NSFP_ClinPred_rankscore"
+    - Input: "ClinPred_score"
+      Help: 'A deleteriousness preidction meta-score for nonsynonymous SNVs. See
         https://doi.org/10.1016/j.ajhg.2018.08.005. for details. The range of the
         score in dbNSFP is from 0 to 1. The higher the score, the more likely the
-        variant is pathogenic. The author suggested cutoff between  deleterious (\"D\")
-        and tolerated (\"T\") is 0.5."
-      Name: "NSFP_ClinPred_score"
-    "DANN_rankscore":
-      Help: "DANN scores were ranked among all DANN scores in dbNSFP. The rankscore
+        variant is pathogenic. The author suggested cutoff between  deleterious ("D")
+        and tolerated ("T") is 0.5.'
+      Output: "NSFP_ClinPred_score"
+    - Input: "DANN_rankscore"
+      Help:
+        "DANN scores were ranked among all DANN scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of DANN scores
         in dbNSFP."
-      Name: "NSFP_DANN_rankscore"
-    "DANN_score":
-      Help: "DANN is a functional prediction score retrained based on the training
+      Output: "NSFP_DANN_rankscore"
+    - Input: "DANN_score"
+      Help:
+        "DANN is a functional prediction score retrained based on the training
         data of CADD using deep neural network. Scores range from 0 to 1. A larger
         number indicate  a higher probability to be damaging. More information of
         this score can be found in doi: 10.1093/bioinformatics/btu703."
-      Name: "NSFP_DANN_score"
-    "DEOGEN2_pred":
-      Help: "Prediction of DEOGEN2 score based on the authors' recommendation, \"T(olerated)\"
-        or \"D(amaging)\". The score cutoff between \"D\" and \"T\" is 0.5."
-      Name: "NSFP_DEOGEN2_pred"
-    "DEOGEN2_rankscore":
+      Output: "NSFP_DANN_score"
+    - Input: "DEOGEN2_pred"
+      Help:
+        'Prediction of DEOGEN2 score based on the authors'' recommendation, "T(olerated)"
+        or "D(amaging)". The score cutoff between "D" and "T" is 0.5.'
+      Output: "NSFP_DEOGEN2_pred"
+    - Input: "DEOGEN2_rankscore"
       Help: "DEOGEN2 scores were ranked among all DEOGEN2 scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of DEOGEN2
         scores in dbNSFP."
-      Name: "NSFP_DEOGEN2_rankscore"
-    "DEOGEN2_score":
-      Help: "A deleteriousness prediction score \"which incorporates heterogeneous
+      Output: "NSFP_DEOGEN2_rankscore"
+    - Input: "DEOGEN2_score"
+      Help:
+        "A deleteriousness prediction score \"which incorporates heterogeneous
         information about the molecular effects of the variants, the domains involved,
         the relevance of the gene and the  interactions in which it participates\".
         It ranges from 0 to 1. The larger the score, the more  likely the variant
         is deleterious. The authors suggest a threshold of 0.5 for separating damaging
         \ vs tolerant variants."
-      Name: "NSFP_DEOGEN2_score"
-    "Denisova":
+      Output: "NSFP_DEOGEN2_score"
+    - Input: "Denisova"
       Help: "genotype of a deep sequenced Denisova"
-      Name: "NSFP_Denisova"
-    "ESP6500_AA_AC":
-      Help: "Alternative allele count in the African American samples of the NHLBI
+      Output: "NSFP_Denisova"
+    - Input: "ESP6500_AA_AC"
+      Help:
+        "Alternative allele count in the African American samples of the NHLBI
         GO Exome Sequencing Project (ESP6500 data set)."
-      Name: "NSFP_ESP6500_AA_AC"
-    "ESP6500_AA_AF":
+      Output: "NSFP_ESP6500_AA_AC"
+    - Input: "ESP6500_AA_AF"
       Help: "Alternative allele frequency in the African American samples of the
         NHLBI GO Exome Sequencing Project (ESP6500 data set)."
-      Name: "NSFP_ESP6500_AA_AF"
-    "ESP6500_EA_AC":
-      Help: "Alternative allele count in the European American samples of the NHLBI
+      Output: "NSFP_ESP6500_AA_AF"
+    - Input: "ESP6500_EA_AC"
+      Help:
+        "Alternative allele count in the European American samples of the NHLBI
         GO Exome Sequencing Project (ESP6500 data set)."
-      Name: "NSFP_ESP6500_EA_AC"
-    "ESP6500_EA_AF":
-      Help: "Alternative allele frequency in the European American samples of the
+      Output: "NSFP_ESP6500_EA_AC"
+    - Input: "ESP6500_EA_AF"
+      Help:
+        "Alternative allele frequency in the European American samples of the
         NHLBI GO Exome Sequencing Project (ESP6500 data set)."
-      Name: "NSFP_ESP6500_EA_AF"
-    "Eigen-PC-phred_coding":
+      Output: "NSFP_ESP6500_EA_AF"
+    - Input: "Eigen-PC-phred_coding"
       Help: "Eigen PC score in phred scale."
-      Name: "NSFP_Eigen-PC-phred_coding"
-    "Eigen-PC-raw_coding":
+      Output: "NSFP_Eigen-PC-phred_coding"
+    - Input: "Eigen-PC-raw_coding"
       Help: "Eigen PC score for genome-wide SNVs. A functional prediction score
         based on conservation, allele frequencies, deleteriousness prediction (for
         missense SNVs) and epigenomic signals (for synonymous and non-coding SNVs)
         using an unsupervised learning  method (doi: 10.1038/ng.3477)."
-      Name: "NSFP_Eigen-PC-raw_coding"
-    "Eigen-PC-raw_coding_rankscore":
-      Help: "Eigen-PC-raw scores were ranked among all Eigen-PC-raw scores in dbNSFP.
+      Output: "NSFP_Eigen-PC-raw_coding"
+    - Input: "Eigen-PC-raw_coding_rankscore"
+      Help:
+        "Eigen-PC-raw scores were ranked among all Eigen-PC-raw scores in dbNSFP.
         The rankscore is the ratio of the rank of the score over the total number
         \ of Eigen-PC-raw scores in dbNSFP."
-      Name: "NSFP_Eigen-PC-raw_coding_rankscore"
-    "Eigen-phred_coding":
+      Output: "NSFP_Eigen-PC-raw_coding_rankscore"
+    - Input: "Eigen-phred_coding"
       Help: "Eigen score in phred scale."
-      Name: "NSFP_Eigen-phred_coding"
-    "Eigen-raw_coding":
+      Output: "NSFP_Eigen-phred_coding"
+    - Input: "Eigen-raw_coding"
       Help: "Eigen score for coding SNVs. A functional prediction score based on
         conservation, allele frequencies, and deleteriousness prediction using an
         unsupervised learning method  (doi: 10.1038/ng.3477)."
-      Name: "NSFP_Eigen-raw_coding"
-    "Eigen-raw_coding_rankscore":
+      Output: "NSFP_Eigen-raw_coding"
+    - Input: "Eigen-raw_coding_rankscore"
       Help: "Eigen-raw scores were ranked among all Eigen-raw scores in dbNSFP.
         The rankscore is the ratio of the rank of the score over the total number
         of Eigen-raw scores in dbNSFP."
-      Name: "NSFP_Eigen-raw_coding_rankscore"
-    "Ensembl_geneid":
+      Output: "NSFP_Eigen-raw_coding_rankscore"
+    - Input: "Ensembl_geneid"
       Help: "Ensembl gene id"
-      Name: "NSFP_Ensembl_geneid"
-    "Ensembl_proteinid":
-      Help: "Ensembl protein ids Multiple entries separated by \";\",  corresponding
-        to Ensembl_transcriptids"
-      Name: "NSFP_Ensembl_proteinid"
-    "Ensembl_transcriptid":
-      Help: "Ensembl transcript ids (Multiple entries separated by \";\")"
-      Name: "NSFP_Ensembl_transcriptid"
-    "FATHMM_converted_rankscore":
-      Help: "FATHMMori scores were first converted to FATHMMnew=1-(FATHMMori+16.13)/26.77,
+      Output: "NSFP_Ensembl_geneid"
+    - Input: "Ensembl_proteinid"
+      Help:
+        'Ensembl protein ids Multiple entries separated by ";",  corresponding
+        to Ensembl_transcriptids'
+      Output: "NSFP_Ensembl_proteinid"
+    - Input: "Ensembl_transcriptid"
+      Help: 'Ensembl transcript ids (Multiple entries separated by ";")'
+      Output: "NSFP_Ensembl_transcriptid"
+    - Input: "FATHMM_converted_rankscore"
+      Help:
+        "FATHMMori scores were first converted to FATHMMnew=1-(FATHMMori+16.13)/26.77,
         then ranked among all FATHMMnew scores in dbNSFP.  The rankscore is the ratio
         of the rank of the score over the total number of FATHMMnew  scores in dbNSFP.
         If there are multiple scores, only the most damaging (largest)  rankscore
         is presented. The scores range from 0 to 1."
-      Name: "NSFP_FATHMM_converted_rankscore"
-    "FATHMM_pred":
-      Help: "If a FATHMMori score is <=-1.5 (or rankscore >=0.81332) the corresponding
-        nsSNV is predicted as \"D(AMAGING)\"; otherwise it is predicted as \"T(OLERATED)\".
-        Multiple predictions separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_FATHMM_pred"
-    "FATHMM_score":
-      Help: "FATHMM default score (weighted for human inherited-disease mutations
+      Output: "NSFP_FATHMM_converted_rankscore"
+    - Input: "FATHMM_pred"
+      Help:
+        'If a FATHMMori score is <=-1.5 (or rankscore >=0.81332) the corresponding
+        nsSNV is predicted as "D(AMAGING)"; otherwise it is predicted as "T(OLERATED)".
+        Multiple predictions separated by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_FATHMM_pred"
+    - Input: "FATHMM_score"
+      Help:
+        'FATHMM default score (weighted for human inherited-disease mutations
         with Disease Ontology) (FATHMMori). Scores range from -16.13 to 10.64. The
         smaller the score  the more likely the SNP has damaging effect. Multiple scores
-        separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_FATHMM_score"
-    "GENCODE_basic":
-      Help: "Whether the transcript belongs to GENCODE_basic (5' and 3' complete
-        transcripts). Multiple entries separated by \";\", matching Ensembl_transcriptid.
-        See https://useast.ensembl.org/info/genome/genebuild/transcript_quality_tags.html"
-      Name: "NSFP_GENCODE_basic"
-    "GERP++_NR":
+        separated by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_FATHMM_score"
+    - Input: "GENCODE_basic"
+      Help:
+        'Whether the transcript belongs to GENCODE_basic (5'' and 3'' complete
+        transcripts). Multiple entries separated by ";", matching Ensembl_transcriptid.
+        See https://useast.ensembl.org/info/genome/genebuild/transcript_quality_tags.html'
+      Output: "NSFP_GENCODE_basic"
+    - Input: "GERP++_NR"
       Help: "GERP++ neutral rate"
-      Name: "NSFP_GERP++_NR"
-    "GERP++_RS":
+      Output: "NSFP_GERP++_NR"
+    - Input: "GERP++_RS"
       Help: "GERP++ RS score, the larger the score, the more conserved the site.
         Scores range from -12.3 to 6.17."
-      Name: "NSFP_GERP++_RS"
-    "GERP++_RS_rankscore":
+      Output: "NSFP_GERP++_RS"
+    - Input: "GERP++_RS_rankscore"
       Help: "GERP++ RS scores were ranked among all GERP++ RS scores in dbNSFP.
         The rankscore is the ratio of the rank of the score over the total number
         of GERP++ RS  scores in dbNSFP."
-      Name: "NSFP_GERP++_RS_rankscore"
-    "GM12878_confidence_value":
-      Help: "0 - highly significant scores (approx. p<.003); 1 - significant scores
+      Output: "NSFP_GERP++_RS_rankscore"
+    - Input: "GM12878_confidence_value"
+      Help:
+        "0 - highly significant scores (approx. p<.003); 1 - significant scores
         (approx. p<.05); 2 - informative scores (approx. p<.25); 3 - other scores
         (approx. p>=.25)."
-      Name: "NSFP_GM12878_confidence_value"
-    "GM12878_fitCons_rankscore":
+      Output: "NSFP_GM12878_confidence_value"
+    - Input: "GM12878_fitCons_rankscore"
       Help: "GM12878 fitCons scores were ranked among all GM12878 fitCons scores
         in dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number  of GM12878 fitCons scores in dbNSFP."
-      Name: "NSFP_GM12878_fitCons_rankscore"
-    "GM12878_fitCons_score":
-      Help: "fitCons score predicts the fraction of genomic positions belonging
-        to a specific function class (defined by epigenomic \"fingerprint\") that
+      Output: "NSFP_GM12878_fitCons_rankscore"
+    - Input: "GM12878_fitCons_score"
+      Help: 'fitCons score predicts the fraction of genomic positions belonging
+        to a specific function class (defined by epigenomic "fingerprint") that
         are under selective  pressure. Scores range from 0 to 1, with a larger score
         indicating a higher proportion of  nucleic sites of the functional class the
         genomic position belong to are under selective  pressure, therefore more likely
         to be functional important. GM12878 fitCons scores are based on cell type
-        GM12878. More details can be found in doi:10.1038/ng.3196."
-      Name: "NSFP_GM12878_fitCons_score"
-    "GTEx_V8_gene":
+        GM12878. More details can be found in doi:10.1038/ng.3196.'
+      Output: "NSFP_GM12878_fitCons_score"
+    - Input: "GTEx_V8_gene"
       Help: "target gene of the (significant) eQTL SNP"
-      Name: "NSFP_GTEx_V8_gene"
-    "GTEx_V8_tissue":
+      Output: "NSFP_GTEx_V8_gene"
+    - Input: "GTEx_V8_tissue"
       Help: "tissue type of the expression data with which the eQTL/gene pair is
         detected"
-      Name: "NSFP_GTEx_V8_tissue"
-    "GenoCanyon_score":
+      Output: "NSFP_GTEx_V8_tissue"
+    - Input: "GenoCanyon_score"
       Help: "A functional prediction score based on conservation and biochemical
         annotations using an unsupervised statistical learning. (doi:10.1038/srep10576)"
-      Name: "NSFP_GenoCanyon_score"
-    "GenoCanyon_rankscore":
-      Help: "GenoCanyon_score scores were ranked among all integrated fitCons scores
+      Output: "NSFP_GenoCanyon_score"
+    - Input: "GenoCanyon_rankscore"
+      Help:
+        "GenoCanyon_score scores were ranked among all integrated fitCons scores
         in dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number  of GenoCanyon_score scores in dbNSFP."
-      Name: "NSFP_GenoCanyon_rankscore"
-    "Geuvadis_eQTL_target_gene":
+      Output: "NSFP_GenoCanyon_rankscore"
+    - Input: "Geuvadis_eQTL_target_gene"
       Help: "Ensembl gene ID of the eQTL associated with, from the Geuvadis project"
-      Name: "NSFP_Geuvadis_eQTL_target_gene"
-    "H1-hESC_confidence_value":
-      Help: "0 - highly significant scores (approx. p<.003); 1 - significant scores
+      Output: "NSFP_Geuvadis_eQTL_target_gene"
+    - Input: "H1-hESC_confidence_value"
+      Help:
+        "0 - highly significant scores (approx. p<.003); 1 - significant scores
         (approx. p<.05); 2 - informative scores (approx. p<.25); 3 - other scores
         (approx. p>=.25)."
-      Name: "NSFP_H1-hESC_confidence_value"
-    "H1-hESC_fitCons_rankscore":
+      Output: "NSFP_H1-hESC_confidence_value"
+    - Input: "H1-hESC_fitCons_rankscore"
       Help: "H1-hESC fitCons scores were ranked among all H1-hESC fitCons scores
         in dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number  of H1-hESC fitCons scores in dbNSFP."
-      Name: "NSFP_H1-hESC_fitCons_rankscore"
-    "H1-hESC_fitCons_score":
-      Help: "fitCons score predicts the fraction of genomic positions belonging
-        to a specific function class (defined by epigenomic \"fingerprint\") that
+      Output: "NSFP_H1-hESC_fitCons_rankscore"
+    - Input: "H1-hESC_fitCons_score"
+      Help: 'fitCons score predicts the fraction of genomic positions belonging
+        to a specific function class (defined by epigenomic "fingerprint") that
         are under selective  pressure. Scores range from 0 to 1, with a larger score
         indicating a higher proportion of  nucleic sites of the functional class the
         genomic position belong to are under selective  pressure, therefore more likely
         to be functional important. GM12878 fitCons scores are based on cell type
-        H1-hESC. More details can be found in doi:10.1038/ng.3196."
-      Name: "NSFP_H1-hESC_fitCons_score"
-    "HUVEC_confidence_value":
-      Help: "0 - highly significant scores (approx. p<.003); 1 - significant scores
+        H1-hESC. More details can be found in doi:10.1038/ng.3196.'
+      Output: "NSFP_H1-hESC_fitCons_score"
+    - Input: "HUVEC_confidence_value"
+      Help:
+        "0 - highly significant scores (approx. p<.003); 1 - significant scores
         (approx. p<.05); 2 - informative scores (approx. p<.25); 3 - other scores
         (approx. p>=.25)."
-      Name: "NSFP_HUVEC_confidence_value"
-    "HUVEC_fitCons_rankscore":
+      Output: "NSFP_HUVEC_confidence_value"
+    - Input: "HUVEC_fitCons_rankscore"
       Help: "HUVEC fitCons scores were ranked among all HUVEC fitCons scores in
         dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number  of HUVEC fitCons scores in dbNSFP."
-      Name: "NSFP_HUVEC_fitCons_rankscore"
-    "HUVEC_fitCons_score":
-      Help: "fitCons score predicts the fraction of genomic positions belonging
-        to a specific function class (defined by epigenomic \"fingerprint\") that
+      Output: "NSFP_HUVEC_fitCons_rankscore"
+    - Input: "HUVEC_fitCons_score"
+      Help: 'fitCons score predicts the fraction of genomic positions belonging
+        to a specific function class (defined by epigenomic "fingerprint") that
         are under selective  pressure. Scores range from 0 to 1, with a larger score
         indicating a higher proportion of  nucleic sites of the functional class the
         genomic position belong to are under selective  pressure, therefore more likely
         to be functional important. GM12878 fitCons scores are based on cell type
-        HUVEC. More details can be found in doi:10.1038/ng.3196."
-      Name: "NSFP_HUVEC_fitCons_score"
-    "Interpro_domain":
-      Help: "domain or conserved site on which the variant locates. Domain annotations
+        HUVEC. More details can be found in doi:10.1038/ng.3196.'
+      Output: "NSFP_HUVEC_fitCons_score"
+    - Input: "Interpro_domain"
+      Help:
+        "domain or conserved site on which the variant locates. Domain annotations
         come from Interpro database. The number in the brackets following a specific
         domain is the count of times Interpro assigns the variant position to   that
         domain, typically coming from different predicting databases. Multiple entries
         \ separated by \";\"."
-      Name: "NSFP_Interpro_domain"
-    "LINSIGHT":
-      Help: "\"The LINSIGHT score measures the probability of negative selection
-        on noncoding sites\" Details refer to doi:10.1038/ng.3810."
-      Name: "NSFP_LINSIGHT"
-    "LINSIGHT_rankscore":
-      Help: "LINSIGHT scores were ranked among all LINSIGHT scores in dbNSFP. The
+      Output: "NSFP_Interpro_domain"
+    - Input: "LINSIGHT"
+      Help: '"The LINSIGHT score measures the probability of negative selection
+        on noncoding sites" Details refer to doi:10.1038/ng.3810.'
+      Output: "NSFP_LINSIGHT"
+    - Input: "LINSIGHT_rankscore"
+      Help:
+        "LINSIGHT scores were ranked among all LINSIGHT scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of LINSIGHT
         scores in dbNSFP."
-      Name: "NSFP_LINSIGHT_rankscore"
-    "LIST-S2_pred":
-      Help: "Prediction of LIST-S2 score based on the authors' recommendation, \"T(olerated)\"
-        or \"D(amaging)\". The score cutoff between \"D\" and \"T\" is 0.85."
-      Name: "NSFP_LIST-S2_pred"
-    "LIST-S2_rankscore":
+      Output: "NSFP_LINSIGHT_rankscore"
+    - Input: "LIST-S2_pred"
+      Help:
+        'Prediction of LIST-S2 score based on the authors'' recommendation, "T(olerated)"
+        or "D(amaging)". The score cutoff between "D" and "T" is 0.85.'
+      Output: "NSFP_LIST-S2_pred"
+    - Input: "LIST-S2_rankscore"
       Help: "LIST-S2 scores were ranked among all LIST-S2 scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of LIST-S2
         scores in dbNSFP."
-      Name: "NSFP_LIST-S2_rankscore"
-    "LIST-S2_score":
-      Help: "A deleteriousness preidction score for nonsynonymous SNVs. See https://doi.org/10.1093/nar/gkaa288.
+      Output: "NSFP_LIST-S2_rankscore"
+    - Input: "LIST-S2_score"
+      Help:
+        'A deleteriousness preidction score for nonsynonymous SNVs. See https://doi.org/10.1093/nar/gkaa288.
         for details. The range of the score in dbNSFP is from 0 to 1. The higher the
         score, the more likely the variant is pathogenic. The author suggested cutoff
-        between  deleterious (\"D\") and tolerated (\"T\") is 0.85."
-      Name: "NSFP_LIST-S2_score"
-    "LRT_Omega":
-      Help: "estimated nonsynonymous-to-synonymous-rate ratio (Omega, reported by
+        between  deleterious ("D") and tolerated ("T") is 0.85.'
+      Output: "NSFP_LIST-S2_score"
+    - Input: "LRT_Omega"
+      Help:
+        "estimated nonsynonymous-to-synonymous-rate ratio (Omega, reported by
         LRT)"
-      Name: "NSFP_LRT_Omega"
-    "LRT_converted_rankscore":
-      Help: "LRTori scores were first converted as LRTnew=1-LRTori*0.5 if Omega<1,
+      Output: "NSFP_LRT_Omega"
+    - Input: "LRT_converted_rankscore"
+      Help:
+        "LRTori scores were first converted as LRTnew=1-LRTori*0.5 if Omega<1,
         or LRTnew=LRTori*0.5 if Omega>=1. Then LRTnew scores were ranked among all
         \ LRTnew scores in dbNSFP. The rankscore is the ratio of the rank over the
         total number  of the scores in dbNSFP. The scores range from 0.00162 to 0.8433."
-      Name: "NSFP_LRT_converted_rankscore"
-    "LRT_pred":
+      Output: "NSFP_LRT_converted_rankscore"
+    - Input: "LRT_pred"
       Help: "LRT prediction, D(eleterious), N(eutral) or U(nknown), which is not
         solely determined by the score."
-      Name: "NSFP_LRT_pred"
-    "LRT_score":
+      Output: "NSFP_LRT_pred"
+    - Input: "LRT_score"
       Help: "The original LRT two-sided p-value (LRTori), ranges from 0 to 1."
-      Name: "NSFP_LRT_score"
-    "M-CAP_pred":
-      Help: "Prediction of M-CAP score based on the authors' recommendation, \"T(olerated)\"
-        or \"D(amaging)\". The score cutoff between \"D\" and \"T\" is 0.025."
-      Name: "NSFP_M-CAP_pred"
-    "M-CAP_rankscore":
-      Help: "M-CAP scores were ranked among all M-CAP scores in dbNSFP. The rankscore
+      Output: "NSFP_LRT_score"
+    - Input: "M-CAP_pred"
+      Help:
+        'Prediction of M-CAP score based on the authors'' recommendation, "T(olerated)"
+        or "D(amaging)". The score cutoff between "D" and "T" is 0.025.'
+      Output: "NSFP_M-CAP_pred"
+    - Input: "M-CAP_rankscore"
+      Help:
+        "M-CAP scores were ranked among all M-CAP scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of M-CAP scores
         in dbNSFP."
-      Name: "NSFP_M-CAP_rankscore"
-    "M-CAP_score":
-      Help: "M-CAP is hybrid ensemble score (details in DOI: 10.1038/ng.3703). Scores
+      Output: "NSFP_M-CAP_rankscore"
+    - Input: "M-CAP_score"
+      Help:
+        "M-CAP is hybrid ensemble score (details in DOI: 10.1038/ng.3703). Scores
         range  from 0 to 1. The larger the score the more likely the SNP has damaging
         effect."
-      Name: "NSFP_M-CAP_score"
-    "MPC_rankscore":
-      Help: "MPC scores were ranked among all MPC scores in dbNSFP. The rankscore
+      Output: "NSFP_M-CAP_score"
+    - Input: "MPC_rankscore"
+      Help:
+        "MPC scores were ranked among all MPC scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of MPC scores
         in dbNSFP."
-      Name: "NSFP_MPC_rankscore"
-    "MPC_score":
-      Help: "A deleteriousness prediction score for missense variants based on regional
+      Output: "NSFP_MPC_rankscore"
+    - Input: "MPC_score"
+      Help:
+        'A deleteriousness prediction score for missense variants based on regional
         missense constraint. The range of MPC score is 0 to 5. The larger the score,
         the more likely the variant is  pathogenic. Details see doi: http://dx.doi.org/10.1101/148353.
-        Multiple entries are separated by \";\", corresponding to Ensembl_transcriptid."
-      Name: "NSFP_MPC_score"
-    "MVP_rankscore":
-      Help: "MVP scores were ranked among all MVP scores in dbNSFP. The rankscore
+        Multiple entries are separated by ";", corresponding to Ensembl_transcriptid.'
+      Output: "NSFP_MPC_score"
+    - Input: "MVP_rankscore"
+      Help:
+        "MVP scores were ranked among all MVP scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of MVP scores
         in dbNSFP."
-      Name: "NSFP_MVP_rankscore"
-    "MVP_score":
-      Help: "A pathogenicity prediction score for missense variants using deep learning
+      Output: "NSFP_MVP_rankscore"
+    - Input: "MVP_score"
+      Help:
+        "A pathogenicity prediction score for missense variants using deep learning
         approach. The range of MVP score is from 0 to 1. The larger the score, the
         more likely the variant is  pathogenic. The authors suggest thresholds of
         0.7 and 0.75 for separating damaging vs tolerant  variants in constrained
         genes (ExAC pLI >=0.5) and non-constrained genes (ExAC pLI<0.5), respectively.
         \ Details see doi: http://dx.doi.org/10.1101/259390 Multiple entries are separated
         by \";\", corresponding to Ensembl_transcriptid."
-      Name: "NSFP_MVP_score"
-    "MetaLR_pred":
-      Help: "Prediction of our MetaLR based ensemble prediction score,\"T(olerated)\"
-        or \"D(amaging)\". The score cutoff between \"D\" and \"T\" is 0.5. The rankscore
-        cutoff between  \"D\" and \"T\" is 0.81101."
-      Name: "NSFP_MetaLR_pred"
-    "MetaLR_rankscore":
-      Help: "MetaLR scores were ranked among all MetaLR scores in dbNSFP. The rankscore
+      Output: "NSFP_MVP_score"
+    - Input: "MetaLR_pred"
+      Help:
+        'Prediction of our MetaLR based ensemble prediction score,"T(olerated)"
+        or "D(amaging)". The score cutoff between "D" and "T" is 0.5. The rankscore
+        cutoff between  "D" and "T" is 0.81101.'
+      Output: "NSFP_MetaLR_pred"
+    - Input: "MetaLR_rankscore"
+      Help:
+        "MetaLR scores were ranked among all MetaLR scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of MetaLR scores
         in dbNSFP.  The scores range from 0 to 1."
-      Name: "NSFP_MetaLR_rankscore"
-    "MetaLR_score":
+      Output: "NSFP_MetaLR_rankscore"
+    - Input: "MetaLR_score"
       Help: "Our logistic regression (LR) based ensemble prediction score, which
         incorporated 10 scores (SIFT, PolyPhen-2 HDIV, PolyPhen-2 HVAR, GERP++, MutationTaster,
         \ Mutation Assessor, FATHMM, LRT, SiPhy, PhyloP) and the maximum frequency
         observed in  the 1000 genomes populations. Larger value means the SNV is more
         likely to be damaging.  Scores range from 0 to 1."
-      Name: "NSFP_MetaLR_score"
-    "MetaRNN_pred":
-      Help: "Prediction of our MetaRNN based ensemble prediction score,\"T(olerated)\"
-        or \"D(amaging)\". The score cutoff between \"D\" and \"T\" is 0.5. The rankscore
-        cutoff between  \"D\" and \"T\" is 0.6149."
-      Name: "NSFP_MetaRNN_pred"
-    "MetaRNN_rankscore":
+      Output: "NSFP_MetaLR_score"
+    - Input: "MetaRNN_pred"
+      Help:
+        'Prediction of our MetaRNN based ensemble prediction score,"T(olerated)"
+        or "D(amaging)". The score cutoff between "D" and "T" is 0.5. The rankscore
+        cutoff between  "D" and "T" is 0.6149.'
+      Output: "NSFP_MetaRNN_pred"
+    - Input: "MetaRNN_rankscore"
       Help: "MetaRNN scores were ranked among all MetaRNN scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of MetaRNN
         scores in dbNSFP.  The scores range from 0 to 1."
-      Name: "NSFP_MetaRNN_rankscore"
-    "MetaRNN_score":
+      Output: "NSFP_MetaRNN_rankscore"
+    - Input: "MetaRNN_score"
       Help: "Our recurrent neural network (RNN) based ensemble prediction score,
         which incorporated 16 scores (SIFT, Polyphen2_HDIV, Polyphen2_HVAR, MutationAssessor,
         PROVEAN,  VEST4, M-CAP, REVEL, MutPred, MVP, PrimateAI, DEOGEN2, CADD, fathmm-XF,
@@ -483,440 +527,489 @@ dbNSFP4:
         \ phastCons17way_primate and SiPhy), and allele frequency information from
         the 1000 Genomes  Project (1000GP), ExAC, and gnomAD. Larger value means the
         SNV is more likely to be damaging.  Scores range from 0 to 1."
-      Name: "NSFP_MetaRNN_score"
-    "MetaSVM_pred":
-      Help: "Prediction of our SVM based ensemble prediction score,\"T(olerated)\"
-        or \"D(amaging)\". The score cutoff between \"D\" and \"T\" is 0. The rankscore
-        cutoff between \"D\" and \"T\" is 0.82257."
-      Name: "NSFP_MetaSVM_pred"
-    "MetaSVM_rankscore":
+      Output: "NSFP_MetaRNN_score"
+    - Input: "MetaSVM_pred"
+      Help: 'Prediction of our SVM based ensemble prediction score,"T(olerated)"
+        or "D(amaging)". The score cutoff between "D" and "T" is 0. The rankscore
+        cutoff between "D" and "T" is 0.82257.'
+      Output: "NSFP_MetaSVM_pred"
+    - Input: "MetaSVM_rankscore"
       Help: "MetaSVM scores were ranked among all MetaSVM scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of MetaSVM
         \ scores in dbNSFP. The scores range from 0 to 1."
-      Name: "NSFP_MetaSVM_rankscore"
-    "MetaSVM_score":
-      Help: "Our support vector machine (SVM) based ensemble prediction score, which
+      Output: "NSFP_MetaSVM_rankscore"
+    - Input: "MetaSVM_score"
+      Help:
+        "Our support vector machine (SVM) based ensemble prediction score, which
         incorporated 10 scores (SIFT, PolyPhen-2 HDIV, PolyPhen-2 HVAR, GERP++, MutationTaster,
         \ Mutation Assessor, FATHMM, LRT, SiPhy, PhyloP) and the maximum frequency
         observed in  the 1000 genomes populations. Larger value means the SNV is more
         likely to be damaging.  Scores range from -2 to 3 in dbNSFP."
-      Name: "NSFP_MetaSVM_score"
-    "MutPred_AAchange":
+      Output: "NSFP_MetaSVM_score"
+    - Input: "MutPred_AAchange"
       Help: "Amino acid change used for MutPred_score calculation."
-      Name: "NSFP_MutPred_AAchange"
-    "MutPred_Top5features":
-      Help: "Top 5 features (molecular mechanisms of disease) as predicted by MutPred
+      Output: "NSFP_MutPred_AAchange"
+    - Input: "MutPred_Top5features"
+      Help:
+        "Top 5 features (molecular mechanisms of disease) as predicted by MutPred
         with p values. MutPred_score > 0.5 and p < 0.05 are referred to as actionable
         hypotheses. MutPred_score > 0.75 and p < 0.05 are referred to as confident
         hypotheses. MutPred_score > 0.75 and p < 0.01 are referred to as very confident
         hypotheses."
-      Name: "NSFP_MutPred_Top5features"
-    "MutPred_protID":
+      Output: "NSFP_MutPred_Top5features"
+    - Input: "MutPred_protID"
       Help: "UniProt accession or Ensembl transcript ID used for MutPred_score calculation."
-      Name: "NSFP_MutPred_protID"
-    "MutPred_rankscore":
+      Output: "NSFP_MutPred_protID"
+    - Input: "MutPred_rankscore"
       Help: "MutPred scores were ranked among all MutPred scores in dbNSFP. The
         rankscore is the ratio of the rank of the score over the total number of MutPred
         scores in dbNSFP."
-      Name: "NSFP_MutPred_rankscore"
-    "MutPred_score":
-      Help: "General MutPred score. Scores range from 0 to 1. The larger the score
+      Output: "NSFP_MutPred_rankscore"
+    - Input: "MutPred_score"
+      Help:
+        "General MutPred score. Scores range from 0 to 1. The larger the score
         the more likely the SNP has damaging effect."
-      Name: "NSFP_MutPred_score"
-    "MutationAssessor_pred":
-      Help: "MutationAssessor's functional impact of a variant - predicted functional,
+      Output: "NSFP_MutPred_score"
+    - Input: "MutationAssessor_pred"
+      Help:
+        "MutationAssessor's functional impact of a variant - predicted functional,
         i.e. high (\"H\") or medium (\"M\"), or predicted non-functional, i.e. low
         (\"L\") or neutral (\"N\"). The MAori score cutoffs between \"H\" and \"M\",
         \ \"M\" and \"L\", and \"L\" and \"N\", are 3.5, 1.935 and 0.8, respectively.
         The rankscore cutoffs  between \"H\" and \"M\", \"M\" and \"L\", and \"L\"
         and \"N\", are 0.9307, 0.52043 and 0.19675,  respectively."
-      Name: "NSFP_MutationAssessor_pred"
-    "MutationAssessor_rankscore":
-      Help: "MAori scores were ranked among all MAori scores in dbNSFP. The rankscore
+      Output: "NSFP_MutationAssessor_pred"
+    - Input: "MutationAssessor_rankscore"
+      Help:
+        "MAori scores were ranked among all MAori scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of MAori  scores
         in dbNSFP. The scores range from 0 to 1."
-      Name: "NSFP_MutationAssessor_rankscore"
-    "MutationAssessor_score":
-      Help: "MutationAssessor functional impact combined score (MAori). The score
-        ranges from -5.17 to 6.49 in dbNSFP.  Multiple entries are separated by \";\",
-        corresponding to Uniprot_entry."
-      Name: "NSFP_MutationAssessor_score"
-    "MutationTaster_AAE":
+      Output: "NSFP_MutationAssessor_rankscore"
+    - Input: "MutationAssessor_score"
+      Help:
+        'MutationAssessor functional impact combined score (MAori). The score
+        ranges from -5.17 to 6.49 in dbNSFP.  Multiple entries are separated by ";",
+        corresponding to Uniprot_entry.'
+      Output: "NSFP_MutationAssessor_score"
+    - Input: "MutationTaster_AAE"
       Help: "MutationTaster predicted amino acid change."
-      Name: "NSFP_MutationTaster_AAE"
-    "MutationTaster_converted_rankscore":
-      Help: "The MTori scores were first converted. If the prediction is \"A\" or
-        \"D\" MTnew=MTori; if the prediction is \"N\" or \"P\", MTnew=1-MTori. Then
+      Output: "NSFP_MutationTaster_AAE"
+    - Input: "MutationTaster_converted_rankscore"
+      Help: 'The MTori scores were first converted. If the prediction is "A" or
+        "D" MTnew=MTori; if the prediction is "N" or "P", MTnew=1-MTori. Then
         MTnew  scores were ranked among all MTnew scores in dbNSFP. If there are multiple
         scores of a  SNV, only the largest MTnew was used in ranking. The rankscore
         is the ratio of the rank of the score over the total number of MTnew scores
-        in dbNSFP. The scores range from 0.08979 to 0.81001."
-      Name: "NSFP_MutationTaster_converted_rankscore"
-    "MutationTaster_model":
+        in dbNSFP. The scores range from 0.08979 to 0.81001.'
+      Output: "NSFP_MutationTaster_converted_rankscore"
+    - Input: "MutationTaster_model"
       Help: "MutationTaster prediction models."
-      Name: "NSFP_MutationTaster_model"
-    "MutationTaster_pred":
-      Help: "MutationTaster prediction, \"A\" (\"disease_causing_automatic\"), \"D\"
-        (\"disease_causing\"), \"N\" (\"polymorphism\") or \"P\" (\"polymorphism_automatic\").
-        The  score cutoff between \"D\" and \"N\" is 0.5 for MTnew and 0.31733 for
-        the rankscore."
-      Name: "NSFP_MutationTaster_pred"
-    "MutationTaster_score":
-      Help: "MutationTaster p-value (MTori), ranges from 0 to 1.  Multiple scores
-        are separated by \";\". Information on corresponding transcript(s) can  be
-        found by querying http://www.mutationtaster.org/ChrPos.html"
-      Name: "NSFP_MutationTaster_score"
-    "PROVEAN_converted_rankscore":
+      Output: "NSFP_MutationTaster_model"
+    - Input: "MutationTaster_pred"
+      Help: 'MutationTaster prediction, "A" ("disease_causing_automatic"), "D"
+        ("disease_causing"), "N" ("polymorphism") or "P" ("polymorphism_automatic").
+        The  score cutoff between "D" and "N" is 0.5 for MTnew and 0.31733 for
+        the rankscore.'
+      Output: "NSFP_MutationTaster_pred"
+    - Input: "MutationTaster_score"
+      Help:
+        'MutationTaster p-value (MTori), ranges from 0 to 1.  Multiple scores
+        are separated by ";". Information on corresponding transcript(s) can  be
+        found by querying http://www.mutationtaster.org/ChrPos.html'
+      Output: "NSFP_MutationTaster_score"
+    - Input: "PROVEAN_converted_rankscore"
       Help: "PROVEANori were first converted to PROVEANnew=1-(PROVEANori+14)/28,
         then ranked among all PROVEANnew scores in dbNSFP. The rankscore is the ratio
         of  the rank the PROVEANnew score over the total number of PROVEANnew scores
         in dbNSFP.  If there are multiple scores, only the most damaging (largest)
         rankscore is presented. The scores range from 0 to 1."
-      Name: "NSFP_PROVEAN_converted_rankscore"
-    "PROVEAN_pred":
+      Output: "NSFP_PROVEAN_converted_rankscore"
+    - Input: "PROVEAN_pred"
       Help: "If PROVEANori <= -2.5 (rankscore>=0.54382) the corresponding nsSNV
         is predicted as \"D(amaging)\"; otherwise it is predicted as \"N(eutral)\".
         \ Multiple predictions separated by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_PROVEAN_pred"
-    "PROVEAN_score":
-      Help: "PROVEAN score (PROVEANori). Scores range from -14 to 14. The smaller
+      Output: "NSFP_PROVEAN_pred"
+    - Input: "PROVEAN_score"
+      Help:
+        'PROVEAN score (PROVEANori). Scores range from -14 to 14. The smaller
         the score the more likely the SNP has damaging effect.  Multiple scores separated
-        by \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_PROVEAN_score"
-    "Polyphen2_HDIV_pred":
-      Help: "Polyphen2 prediction based on HumDiv, \"D\" (\"probably damaging\",
-        HDIV score in [0.957,1] or rankscore in [0.55859,0.91137]), \"P\" (\"possibly
-        damaging\",  HDIV score in [0.454,0.956] or rankscore in [0.37043,0.55681])
-        and \"B\" (\"benign\",  HDIV score in [0,0.452] or rankscore in [0.03061,0.36974]).
+        by ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_PROVEAN_score"
+    - Input: "Polyphen2_HDIV_pred"
+      Help: 'Polyphen2 prediction based on HumDiv, "D" ("probably damaging",
+        HDIV score in [0.957,1] or rankscore in [0.55859,0.91137]), "P" ("possibly
+        damaging",  HDIV score in [0.454,0.956] or rankscore in [0.37043,0.55681])
+        and "B" ("benign",  HDIV score in [0,0.452] or rankscore in [0.03061,0.36974]).
         Score cutoff for binary  classification is 0.5 for HDIV score or 0.38028 for
-        rankscore, i.e. the prediction is  \"neutral\" if the HDIV score is smaller
-        than 0.5 (rankscore is smaller than 0.38028),  and \"deleterious\" if the
+        rankscore, i.e. the prediction is  "neutral" if the HDIV score is smaller
+        than 0.5 (rankscore is smaller than 0.38028),  and "deleterious" if the
         HDIV score is larger than 0.5 (rankscore is larger than  0.38028). Multiple
-        entries are separated by \";\", corresponding to Uniprot_acc."
-      Name: "NSFP_Polyphen2_HDIV_pred"
-    "Polyphen2_HDIV_rankscore":
-      Help: "Polyphen2 HDIV scores were first ranked among all HDIV scores in dbNSFP.
+        entries are separated by ";", corresponding to Uniprot_acc.'
+      Output: "NSFP_Polyphen2_HDIV_pred"
+    - Input: "Polyphen2_HDIV_rankscore"
+      Help:
+        "Polyphen2 HDIV scores were first ranked among all HDIV scores in dbNSFP.
         The rankscore is the ratio of the rank the score over the total number of
         \ the scores in dbNSFP. If there are multiple scores, only the most damaging
         (largest)  rankscore is presented. The scores range from 0.03061 to 0.91137."
-      Name: "NSFP_Polyphen2_HDIV_rankscore"
-    "Polyphen2_HDIV_score":
-      Help: "Polyphen2 score based on HumDiv, i.e. hdiv_prob. The score ranges from
-        0 to 1.  Multiple entries separated by \";\", corresponding to Uniprot_acc."
-      Name: "NSFP_Polyphen2_HDIV_score"
-    "Polyphen2_HVAR_pred":
-      Help: "Polyphen2 prediction based on HumVar, \"D\" (\"probably damaging\",
-        HVAR score in [0.909,1] or rankscore in [0.65694,0.97581]), \"P\" (\"possibly
-        damaging\",  HVAR in [0.447,0.908] or rankscore in [0.47121,0.65622]) and
-        \"B\" (\"benign\", HVAR  score in [0,0.446] or rankscore in [0.01493,0.47076]).
+      Output: "NSFP_Polyphen2_HDIV_rankscore"
+    - Input: "Polyphen2_HDIV_score"
+      Help:
+        'Polyphen2 score based on HumDiv, i.e. hdiv_prob. The score ranges from
+        0 to 1.  Multiple entries separated by ";", corresponding to Uniprot_acc.'
+      Output: "NSFP_Polyphen2_HDIV_score"
+    - Input: "Polyphen2_HVAR_pred"
+      Help: 'Polyphen2 prediction based on HumVar, "D" ("probably damaging",
+        HVAR score in [0.909,1] or rankscore in [0.65694,0.97581]), "P" ("possibly
+        damaging",  HVAR in [0.447,0.908] or rankscore in [0.47121,0.65622]) and
+        "B" ("benign", HVAR  score in [0,0.446] or rankscore in [0.01493,0.47076]).
         Score cutoff for binary  classification is 0.5 for HVAR score or 0.48762 for
-        rankscore, i.e. the prediction  is \"neutral\" if the HVAR score is smaller
-        than 0.5 (rankscore is smaller than  0.48762), and \"deleterious\" if the
+        rankscore, i.e. the prediction  is "neutral" if the HVAR score is smaller
+        than 0.5 (rankscore is smaller than  0.48762), and "deleterious" if the
         HVAR score is larger than 0.5 (rankscore is larger  than 0.48762). Multiple
-        entries are separated by \";\", corresponding to Uniprot_acc."
-      Name: "NSFP_Polyphen2_HVAR_pred"
-    "Polyphen2_HVAR_rankscore":
-      Help: "Polyphen2 HVAR scores were first ranked among all HVAR scores in dbNSFP.
+        entries are separated by ";", corresponding to Uniprot_acc.'
+      Output: "NSFP_Polyphen2_HVAR_pred"
+    - Input: "Polyphen2_HVAR_rankscore"
+      Help:
+        "Polyphen2 HVAR scores were first ranked among all HVAR scores in dbNSFP.
         The rankscore is the ratio of the rank the score over the total number of
         \ the scores in dbNSFP. If there are multiple scores, only the most damaging
         (largest)  rankscore is presented. The scores range from 0.01493 to 0.97581."
-      Name: "NSFP_Polyphen2_HVAR_rankscore"
-    "Polyphen2_HVAR_score":
-      Help: "Polyphen2 score based on HumVar, i.e. hvar_prob. The score ranges from
-        0 to 1.  Multiple entries separated by \";\", corresponding to Uniprot_acc."
-      Name: "NSFP_Polyphen2_HVAR_score"
-    "PrimateAI_pred":
-      Help: "Prediction of PrimateAI score based on the authors' recommendation,
-        \"T(olerated)\" or \"D(amaging)\". The score cutoff between \"D\" and \"T\"
-        is 0.803."
-      Name: "NSFP_PrimateAI_pred"
-    "PrimateAI_rankscore":
+      Output: "NSFP_Polyphen2_HVAR_rankscore"
+    - Input: "Polyphen2_HVAR_score"
+      Help:
+        'Polyphen2 score based on HumVar, i.e. hvar_prob. The score ranges from
+        0 to 1.  Multiple entries separated by ";", corresponding to Uniprot_acc.'
+      Output: "NSFP_Polyphen2_HVAR_score"
+    - Input: "PrimateAI_pred"
+      Help:
+        'Prediction of PrimateAI score based on the authors'' recommendation,
+        "T(olerated)" or "D(amaging)". The score cutoff between "D" and "T"
+        is 0.803.'
+      Output: "NSFP_PrimateAI_pred"
+    - Input: "PrimateAI_rankscore"
       Help: "PrimateAI scores were ranked among all PrimateAI scores in dbNSFP.
         The rankscore is the ratio of the rank of the score over the total number
         of PrimateAI scores in dbNSFP."
-      Name: "NSFP_PrimateAI_rankscore"
-    "PrimateAI_score":
-      Help: "A pathogenicity prediction score for missense variants based on common
+      Output: "NSFP_PrimateAI_rankscore"
+    - Input: "PrimateAI_score"
+      Help:
+        "A pathogenicity prediction score for missense variants based on common
         variants of non-human primate species using a deep neural network. The range
         of PrimateAI score is 0 to 1.  The larger the score, the more likely the variant
         is pathogenic. The authors suggest a threshold of 0.803 for separating damaging
         vs tolerant variants.  Details see https://doi.org/10.1038/s41588-018-0167-z"
-      Name: "NSFP_PrimateAI_score"
-    "REVEL_rankscore":
-      Help: "REVEL scores were ranked among all REVEL scores in dbNSFP. The rankscore
+      Output: "NSFP_PrimateAI_score"
+    - Input: "REVEL_rankscore"
+      Help:
+        "REVEL scores were ranked among all REVEL scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of REVEL scores
         in dbNSFP."
-      Name: "NSFP_REVEL_rankscore"
-    "REVEL_score":
-      Help: "REVEL is an ensemble score based on 13 individual scores for predicting
+      Output: "NSFP_REVEL_rankscore"
+    - Input: "REVEL_score"
+      Help:
+        'REVEL is an ensemble score based on 13 individual scores for predicting
         the pathogenicity of missense variants. Scores range from 0 to 1. The larger
-        the score the more  likely the SNP has damaging effect. \"REVEL scores are
+        the score the more  likely the SNP has damaging effect. "REVEL scores are
         freely available for non-commercial use.   For other uses, please contact
-        Weiva Sieh\" (weiva.sieh@mssm.edu)"
-      Name: "NSFP_REVEL_score"
-    "Reliability_index":
-      Help: "Number of observed component scores (except the maximum frequency in
+        Weiva Sieh" (weiva.sieh@mssm.edu)'
+      Output: "NSFP_REVEL_score"
+    - Input: "Reliability_index"
+      Help:
+        "Number of observed component scores (except the maximum frequency in
         the 1000 genomes populations) for MetaSVM and MetaLR. Ranges from 1 to 10.
         As MetaSVM  and MetaLR scores are calculated based on imputed data, the less
         missing component  scores, the higher the reliability of the scores and predictions."
-      Name: "NSFP_Reliability_index"
-    "SIFT4G_converted_rankscore":
-      Help: "SIFT4G scores were first converted to SIFT4Gnew=1-SIFT4G, then ranked
+      Output: "NSFP_Reliability_index"
+    - Input: "SIFT4G_converted_rankscore"
+      Help:
+        "SIFT4G scores were first converted to SIFT4Gnew=1-SIFT4G, then ranked
         among all SIFT4Gnew scores in dbNSFP. The rankscore is the ratio of  the rank
         the SIFT4Gnew score over the total number of SIFT4Gnew scores in dbNSFP.  If
         there are multiple scores, only the most damaging (largest) rankscore is presented."
-      Name: "NSFP_SIFT4G_converted_rankscore"
-    "SIFT4G_pred":
-      Help: "If SIFT4G is < 0.05 the corresponding nsSNV is predicted as \"D(amaging)\";
-        otherwise it is predicted as \"T(olerated)\".  Multiple scores separated by
-        \",\", corresponding to Ensembl_transcriptid"
-      Name: "NSFP_SIFT4G_pred"
-    "SIFT4G_score":
-      Help: "SIFT 4G score (SIFT4G). Scores range from 0 to 1. The smaller the score
+      Output: "NSFP_SIFT4G_converted_rankscore"
+    - Input: "SIFT4G_pred"
+      Help:
+        'If SIFT4G is < 0.05 the corresponding nsSNV is predicted as "D(amaging)";
+        otherwise it is predicted as "T(olerated)".  Multiple scores separated by
+        ",", corresponding to Ensembl_transcriptid'
+      Output: "NSFP_SIFT4G_pred"
+    - Input: "SIFT4G_score"
+      Help:
+        'SIFT 4G score (SIFT4G). Scores range from 0 to 1. The smaller the score
         the more likely the SNP has damaging effect.  Multiple scores separated by
-        \",\", corresponding to Ensembl_transcriptid"
-      Name: "NSFP_SIFT4G_score"
-    "SIFT_converted_rankscore":
-      Help: "SIFTori scores were first converted to SIFTnew=1-SIFTori, then ranked
+        ",", corresponding to Ensembl_transcriptid'
+      Output: "NSFP_SIFT4G_score"
+    - Input: "SIFT_converted_rankscore"
+      Help:
+        "SIFTori scores were first converted to SIFTnew=1-SIFTori, then ranked
         among all SIFTnew scores in dbNSFP. The rankscore is the ratio of  the rank
         the SIFTnew score over the total number of SIFTnew scores in dbNSFP.  If there
         are multiple scores, only the most damaging (largest) rankscore is presented.
         The rankscores range from 0.00964 to 0.91255."
-      Name: "NSFP_SIFT_converted_rankscore"
-    "SIFT_pred":
-      Help: "If SIFTori is smaller than 0.05 (rankscore>0.39575) the corresponding
+      Output: "NSFP_SIFT_converted_rankscore"
+    - Input: "SIFT_pred"
+      Help:
+        "If SIFTori is smaller than 0.05 (rankscore>0.39575) the corresponding
         nsSNV is predicted as \"D(amaging)\"; otherwise it is predicted as \"T(olerated)\".
         \ Multiple predictions separated by \";\""
-      Name: "NSFP_SIFT_pred"
-    "SIFT_score":
-      Help: "SIFT score (SIFTori). Scores range from 0 to 1. The smaller the score
+      Output: "NSFP_SIFT_pred"
+    - Input: "SIFT_score"
+      Help:
+        'SIFT score (SIFTori). Scores range from 0 to 1. The smaller the score
         the more likely the SNP has damaging effect.  Multiple scores separated by
-        \";\", corresponding to Ensembl_proteinid."
-      Name: "NSFP_SIFT_score"
-    "SiPhy_29way_logOdds":
+        ";", corresponding to Ensembl_proteinid.'
+      Output: "NSFP_SIFT_score"
+    - Input: "SiPhy_29way_logOdds"
       Help: "SiPhy score based on 29 mammals genomes. The larger the score, the
         more conserved the site. Scores range from 0 to 37.9718 in dbNSFP."
-      Name: "NSFP_SiPhy_29way_logOdds"
-    "SiPhy_29way_logOdds_rankscore":
-      Help: "SiPhy_29way_logOdds scores were ranked among all SiPhy_29way_logOdds
+      Output: "NSFP_SiPhy_29way_logOdds"
+    - Input: "SiPhy_29way_logOdds_rankscore"
+      Help:
+        "SiPhy_29way_logOdds scores were ranked among all SiPhy_29way_logOdds
         scores in dbNSFP. The rankscore is the ratio of the rank  of the score over
         the total number of SiPhy_29way_logOdds scores in dbNSFP."
-      Name: "NSFP_SiPhy_29way_logOdds_rankscore"
-    "SiPhy_29way_pi":
+      Output: "NSFP_SiPhy_29way_logOdds_rankscore"
+    - Input: "SiPhy_29way_pi"
       Help: "The estimated stationary distribution of A, C, G and T at the site,
         using SiPhy algorithm based on 29 mammals genomes."
-      Name: "NSFP_SiPhy_29way_pi"
-    "TSL":
-      Help: "Transcript Support Level. Multiple entries separated by \";\", matching
-        Ensembl_transcriptid. Potential values: 1 to 5, NA.  See https://useast.ensembl.org/info/genome/genebuild/transcript_quality_tags.html"
-      Name: "NSFP_TSL"
-    "TWINSUK_AC":
+      Output: "NSFP_SiPhy_29way_pi"
+    - Input: "TSL"
+      Help:
+        'Transcript Support Level. Multiple entries separated by ";", matching
+        Ensembl_transcriptid. Potential values: 1 to 5, NA.  See https://useast.ensembl.org/info/genome/genebuild/transcript_quality_tags.html'
+      Output: "NSFP_TSL"
+    - Input: "TWINSUK_AC"
       Help: "Alternative allele count in called genotypes in UK10K TWINSUK cohort."
-      Name: "NSFP_TWINSUK_AC"
-    "TWINSUK_AF":
+      Output: "NSFP_TWINSUK_AC"
+    - Input: "TWINSUK_AF"
       Help: "Alternative allele frequency in called genotypes in UK10K TWINSUK cohort."
-      Name: "NSFP_TWINSUK_AF"
-    "UK10K_AC":
+      Output: "NSFP_TWINSUK_AF"
+    - Input: "UK10K_AC"
       Help: "Alternative allele count in combined genotypes in UK10K cohort (TWINSUK+ALSPAC)."
-      Name: "NSFP_UK10K_AC"
-    "UK10K_AF":
+      Output: "NSFP_UK10K_AC"
+    - Input: "UK10K_AF"
       Help: "Alternative allele frequency in combined genotypes in UK10K cohort
         (TWINSUK+ALSPAC)."
-      Name: "NSFP_UK10K_AF"
-    "Uniprot_acc":
-      Help: "Uniprot accession number matching the Ensembl_proteinid Multiple entries
-        separated by \";\"."
-      Name: "NSFP_Uniprot_acc"
-    "Uniprot_entry":
-      Help: "Uniprot entry ID matching the Ensembl_proteinid Multiple entries separated
-        by \";\"."
-      Name: "NSFP_Uniprot_entry"
-    "VEP_canonical":
-      Help: "canonical transcript used in Ensembl. Multiple entries separated by
-        \";\", matching Ensembl_transcriptid. See https://useast.ensembl.org/Help/Glossary?id=521"
-      Name: "NSFP_VEP_canonical"
-    "VEST4_rankscore":
-      Help: "VEST4 scores were ranked among all VEST4 scores in dbNSFP. The rankscore
+      Output: "NSFP_UK10K_AF"
+    - Input: "Uniprot_acc"
+      Help:
+        'Uniprot accession number matching the Ensembl_proteinid Multiple entries
+        separated by ";".'
+      Output: "NSFP_Uniprot_acc"
+    - Input: "Uniprot_entry"
+      Help:
+        'Uniprot entry ID matching the Ensembl_proteinid Multiple entries separated
+        by ";".'
+      Output: "NSFP_Uniprot_entry"
+    - Input: "VEP_canonical"
+      Help: 'canonical transcript used in Ensembl. Multiple entries separated by
+        ";", matching Ensembl_transcriptid. See https://useast.ensembl.org/Help/Glossary?id=521'
+      Output: "NSFP_VEP_canonical"
+    - Input: "VEST4_rankscore"
+      Help:
+        "VEST4 scores were ranked among all VEST4 scores in dbNSFP. The rankscore
         is the ratio of the rank of the score over the total number of VEST4  scores
         in dbNSFP. In case there are multiple scores for the same variant, the largest
         \ score (most damaging) is presented. The scores range from 0 to 1.  Please
         note VEST score is free for non-commercial use. For more details please refer
         to  http://wiki.chasmsoftware.org/index.php/SoftwareLicense. Commercial users
         should contact  the Johns Hopkins Technology Transfer office."
-      Name: "NSFP_VEST4_rankscore"
-    "VEST4_score":
-      Help: "VEST 4.0 score. Score ranges from 0 to 1. The larger the score the
+      Output: "NSFP_VEST4_rankscore"
+    - Input: "VEST4_score"
+      Help: 'VEST 4.0 score. Score ranges from 0 to 1. The larger the score the
         more likely the mutation may cause functional change.  Multiple scores separated
-        by \";\", corresponding to Ensembl_transcriptid. Please note this score is
+        by ";", corresponding to Ensembl_transcriptid. Please note this score is
         free for non-commercial use. For more details please refer to  http://wiki.chasmsoftware.org/index.php/SoftwareLicense.
-        Commercial users should contact  the Johns Hopkins Technology Transfer office."
-      Name: "NSFP_VEST4_score"
-    "VindijiaNeandertal":
+        Commercial users should contact  the Johns Hopkins Technology Transfer office.'
+      Output: "NSFP_VEST4_score"
+    - Input: "VindijiaNeandertal"
       Help: "genotype of a deep sequenced Vindijia Neandertal"
-      Name: "NSFP_VindijiaNeandertal"
-    "bStatistic":
-      Help: "Background selection (B) value estimates from doi.org/10.1371/journal.pgen.1000471.
+      Output: "NSFP_VindijiaNeandertal"
+    - Input: "bStatistic"
+      Help:
+        "Background selection (B) value estimates from doi.org/10.1371/journal.pgen.1000471.
         Ranges from 0 to 1000. It estimates the expected fraction (*1000) of neutral
         diversity present  at a site. Values close to 0 represent near complete removal
         of diversity as a result of  background selection and values near 1000 indicating
         absent of background selection.  Data from CADD v1.4."
-      Name: "NSFP_bStatistic"
-    "bStatistic_converted_rankscore":
+      Output: "NSFP_bStatistic"
+    - Input: "bStatistic_converted_rankscore"
       Help: "bStatistic scores were first converted to -bStatistic, then  ranked
         among all -bStatistic scores in dbNSFP. The rankscore is the ratio of the
         rank of  -bStatistic over the total number of -bStatistic scores in dbNSFP."
-      Name: "NSFP_bStatistic_converted_rankscore"
-    "cds_strand":
+      Output: "NSFP_bStatistic_converted_rankscore"
+    - Input: "cds_strand"
       Help: "coding sequence (CDS) strand (+ or -)"
-      Name: "NSFP_cds_strand"
-    "clinvar_MedGen_id":
+      Output: "NSFP_cds_strand"
+    - Input: "clinvar_MedGen_id"
       Help: "MedGen ID of the trait/disease the clinvar_trait referring to"
-      Name: "NSFP_clinvar_MedGen_id"
-    "clinvar_OMIM_id":
+      Output: "NSFP_clinvar_MedGen_id"
+    - Input: "clinvar_OMIM_id"
       Help: "OMIM ID of the trait/disease the clinvar_trait referring to"
-      Name: "NSFP_clinvar_OMIM_id"
-    "clinvar_Orphanet_id":
+      Output: "NSFP_clinvar_OMIM_id"
+    - Input: "clinvar_Orphanet_id"
       Help: "Orphanet ID of the trait/disease the clinvar_trait referring to"
-      Name: "NSFP_clinvar_Orphanet_id"
-    "clinvar_clnsig":
-      Help: "clinical significance by clinvar Possible values: Benign, Likely_benign,
+      Output: "NSFP_clinvar_Orphanet_id"
+    - Input: "clinvar_clnsig"
+      Help:
+        "clinical significance by clinvar Possible values: Benign, Likely_benign,
         Likely_pathogenic, Pathogenic, drug_response,  histocompatibility. A negative
         score means the score is for the ref allele"
-      Name: "NSFP_clinvar_clnsig"
-    "clinvar_hgvs":
+      Output: "NSFP_clinvar_clnsig"
+    - Input: "clinvar_hgvs"
       Help: "variant in HGVS format"
-      Name: "NSFP_clinvar_hgvs"
-    "clinvar_id":
+      Output: "NSFP_clinvar_hgvs"
+    - Input: "clinvar_id"
       Help: "clinvar variation ID"
-      Name: "NSFP_clinvar_id"
-    "clinvar_review":
-      Help: "ClinVar Review Status summary Possible values:  no assertion criteria
+      Output: "NSFP_clinvar_id"
+    - Input: "clinvar_review"
+      Help:
+        "ClinVar Review Status summary Possible values:  no assertion criteria
         provided, criteria provided, single submitter, criteria provided, multiple
         submitters, no conflicts, reviewed by expert panel, practice guideline"
-      Name: "NSFP_clinvar_review"
-    "clinvar_trait":
+      Output: "NSFP_clinvar_review"
+    - Input: "clinvar_trait"
       Help: "the trait/disease the clinvar_clnsig referring to"
-      Name: "NSFP_clinvar_trait"
-    "clinvar_var_source":
+      Output: "NSFP_clinvar_trait"
+    - Input: "clinvar_var_source"
       Help: "source of the variant"
-      Name: "NSFP_clinvar_var_source"
-    "codon_degeneracy":
+      Output: "NSFP_clinvar_var_source"
+    - Input: "codon_degeneracy"
       Help: "degenerate type (0, 2 or 3)"
-      Name: "NSFP_codon_degeneracy"
-    "codonpos":
+      Output: "NSFP_codon_degeneracy"
+    - Input: "codonpos"
       Help: "position on the codon (1, 2 or 3)"
-      Name: "NSFP_codonpos"
-    "fathmm-MKL_coding_group":
-      Help: "the groups of features (labeled A-J) used to obtained the score. More
+      Output: "NSFP_codonpos"
+    - Input: "fathmm-MKL_coding_group"
+      Help:
+        "the groups of features (labeled A-J) used to obtained the score. More
         details can be found in doi: 10.1093/bioinformatics/btv009."
-      Name: "NSFP_fathmm-MKL_coding_group"
-    "fathmm-MKL_coding_pred":
-      Help: "If a fathmm-MKL_coding_score is >0.5 (or rankscore >0.28317)  the corresponding
-        nsSNV is predicted as \"D(AMAGING)\"; otherwise it is predicted as \"N(EUTRAL)\"."
-      Name: "NSFP_fathmm-MKL_coding_pred"
-    "fathmm-MKL_coding_rankscore":
-      Help: "fathmm-MKL coding scores were ranked among all fathmm-MKL coding scores
+      Output: "NSFP_fathmm-MKL_coding_group"
+    - Input: "fathmm-MKL_coding_pred"
+      Help:
+        'If a fathmm-MKL_coding_score is >0.5 (or rankscore >0.28317)  the corresponding
+        nsSNV is predicted as "D(AMAGING)"; otherwise it is predicted as "N(EUTRAL)".'
+      Output: "NSFP_fathmm-MKL_coding_pred"
+    - Input: "fathmm-MKL_coding_rankscore"
+      Help:
+        "fathmm-MKL coding scores were ranked among all fathmm-MKL coding scores
         in dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number  of fathmm-MKL coding scores in dbNSFP."
-      Name: "NSFP_fathmm-MKL_coding_rankscore"
-    "fathmm-MKL_coding_score":
-      Help: "fathmm-MKL p-values. Scores range from 0 to 1. SNVs with scores >0.5
+      Output: "NSFP_fathmm-MKL_coding_rankscore"
+    - Input: "fathmm-MKL_coding_score"
+      Help:
+        "fathmm-MKL p-values. Scores range from 0 to 1. SNVs with scores >0.5
         are predicted to be deleterious, and those <0.5 are predicted to be neutral
         or benign.  Scores close to 0 or 1 are with the highest-confidence. Coding
         scores are trained using 10 groups of features. More details of the score
         can be found in  doi: 10.1093/bioinformatics/btv009."
-      Name: "NSFP_fathmm-MKL_coding_score"
-    "fathmm-XF_coding_pred":
-      Help: "If a fathmm-XF_coding_score is >0.5, the corresponding nsSNV is predicted
-        as \"D(AMAGING)\"; otherwise it is predicted as \"N(EUTRAL)\"."
-      Name: "NSFP_fathmm-XF_coding_pred"
-    "fathmm-XF_coding_rankscore":
-      Help: "fathmm-XF coding scores were ranked among all fathmm-XF coding scores
+      Output: "NSFP_fathmm-MKL_coding_score"
+    - Input: "fathmm-XF_coding_pred"
+      Help:
+        'If a fathmm-XF_coding_score is >0.5, the corresponding nsSNV is predicted
+        as "D(AMAGING)"; otherwise it is predicted as "N(EUTRAL)".'
+      Output: "NSFP_fathmm-XF_coding_pred"
+    - Input: "fathmm-XF_coding_rankscore"
+      Help:
+        "fathmm-XF coding scores were ranked among all fathmm-XF coding scores
         in dbNSFP. The rankscore is the ratio of the rank of the score over the total
         number  of fathmm-XF coding scores in dbNSFP."
-      Name: "NSFP_fathmm-XF_coding_rankscore"
-    "fathmm-XF_coding_score":
+      Output: "NSFP_fathmm-XF_coding_rankscore"
+    - Input: "fathmm-XF_coding_score"
       Help: "fathmm-XF p-values. Scores range from 0 to 1. SNVs with scores >0.5
         are predicted to be deleterious, and those <0.5 are predicted to be neutral
         or benign.  Scores close to 0 or 1 are with the highest-confidence. Coding
         scores are trained using 10 groups of features. More details of the score
         can be found in  doi: 10.1093/bioinformatics/btx536."
-      Name: "NSFP_fathmm-XF_coding_score"
-    "integrated_confidence_value":
-      Help: "0 - highly significant scores (approx. p<.003); 1 - significant scores
+      Output: "NSFP_fathmm-XF_coding_score"
+    - Input: "integrated_confidence_value"
+      Help:
+        "0 - highly significant scores (approx. p<.003); 1 - significant scores
         (approx. p<.05); 2 - informative scores (approx. p<.25); 3 - other scores
         (approx. p>=.25)."
-      Name: "NSFP_integrated_confidence_value"
-    "integrated_fitCons_rankscore":
+      Output: "NSFP_integrated_confidence_value"
+    - Input: "integrated_fitCons_rankscore"
       Help: "integrated fitCons scores were ranked among all integrated fitCons
         scores in dbNSFP. The rankscore is the ratio of the rank of the score over
         the total number  of integrated fitCons scores in dbNSFP."
-      Name: "NSFP_integrated_fitCons_rankscore"
-    "integrated_fitCons_score":
-      Help: "fitCons score predicts the fraction of genomic positions belonging
-        to a specific function class (defined by epigenomic \"fingerprint\") that
+      Output: "NSFP_integrated_fitCons_rankscore"
+    - Input: "integrated_fitCons_score"
+      Help: 'fitCons score predicts the fraction of genomic positions belonging
+        to a specific function class (defined by epigenomic "fingerprint") that
         are under selective  pressure. Scores range from 0 to 1, with a larger score
         indicating a higher proportion of  nucleic sites of the functional class the
         genomic position belong to are under selective  pressure, therefore more likely
         to be functional important. Integrated (i6) scores are integrated across three
-        cell types (GM12878, H1-hESC and HUVEC). More details can be found in doi:10.1038/ng.3196."
-      Name: "NSFP_integrated_fitCons_score"
-    "phastCons100way_vertebrate":
-      Help: "phastCons conservation score based on the multiple alignments of 100
+        cell types (GM12878, H1-hESC and HUVEC). More details can be found in doi:10.1038/ng.3196.'
+      Output: "NSFP_integrated_fitCons_score"
+    - Input: "phastCons100way_vertebrate"
+      Help:
+        "phastCons conservation score based on the multiple alignments of 100
         vertebrate genomes (including human). The larger the score, the more conserved
         \ the site. Scores range from 0 to 1."
-      Name: "NSFP_phastCons100way_vertebrate"
-    "phastCons100way_vertebrate_rankscore":
-      Help: "phastCons100way_vertebrate scores were ranked among all phastCons100way_vertebrate
+      Output: "NSFP_phastCons100way_vertebrate"
+    - Input: "phastCons100way_vertebrate_rankscore"
+      Help:
+        "phastCons100way_vertebrate scores were ranked among all phastCons100way_vertebrate
         scores in dbNSFP. The rankscore is the ratio of the rank  of the score over
         the total number of phastCons100way_vertebrate scores in dbNSFP."
-      Name: "NSFP_phastCons100way_vertebrate_rankscore"
-    "phastCons17way_primate":
-      Help: "a conservation score based on 17way alignment primate set, The larger
+      Output: "NSFP_phastCons100way_vertebrate_rankscore"
+    - Input: "phastCons17way_primate"
+      Help:
+        "a conservation score based on 17way alignment primate set, The larger
         the score, the more conserved the site. Scores range from 0 to 1."
-      Name: "NSFP_phastCons17way_primate"
-    "phastCons17way_primate_rankscore":
-      Help: "the rank of the phastCons17way_primate score among all phastCons17way_primate
+      Output: "NSFP_phastCons17way_primate"
+    - Input: "phastCons17way_primate_rankscore"
+      Help:
+        "the rank of the phastCons17way_primate score among all phastCons17way_primate
         scores in dbNSFP."
-      Name: "NSFP_phastCons17way_primate_rankscore"
-    "phastCons30way_mammalian":
+      Output: "NSFP_phastCons17way_primate_rankscore"
+    - Input: "phastCons30way_mammalian"
       Help: "phastCons conservation score based on the multiple alignments of 30
         mammalian genomes (including human). The larger the score, the more conserved
         \ the site. Scores range from 0 to 1."
-      Name: "NSFP_phastCons30way_mammalian"
-    "phastCons30way_mammalian_rankscore":
-      Help: "phastCons30way_mammalian scores were ranked among all phastCons30way_mammalian
+      Output: "NSFP_phastCons30way_mammalian"
+    - Input: "phastCons30way_mammalian_rankscore"
+      Help:
+        "phastCons30way_mammalian scores were ranked among all phastCons30way_mammalian
         scores in dbNSFP. The rankscore is the ratio of the rank  of the score over
         the total number of phastCons30way_mammalian scores in dbNSFP."
-      Name: "NSFP_phastCons30way_mammalian_rankscore"
-    "phyloP100way_vertebrate":
-      Help: "phyloP (phylogenetic p-values) conservation score based on the multiple
+      Output: "NSFP_phastCons30way_mammalian_rankscore"
+    - Input: "phyloP100way_vertebrate"
+      Help:
+        "phyloP (phylogenetic p-values) conservation score based on the multiple
         alignments of 100 vertebrate genomes (including human). The larger the score,
         \ the more conserved the site. Scores range from -20.0 to 10.003 in dbNSFP."
-      Name: "NSFP_phyloP100way_vertebrate"
-    "phyloP100way_vertebrate_rankscore":
-      Help: "phyloP100way_vertebrate scores were ranked among all phyloP100way_vertebrate
+      Output: "NSFP_phyloP100way_vertebrate"
+    - Input: "phyloP100way_vertebrate_rankscore"
+      Help:
+        "phyloP100way_vertebrate scores were ranked among all phyloP100way_vertebrate
         scores in dbNSFP. The rankscore is the ratio of the rank of the  score over
         the total number of phyloP100way_vertebrate scores in dbNSFP."
-      Name: "NSFP_phyloP100way_vertebrate_rankscore"
-    "phyloP17way_primate":
-      Help: "a conservation score based on 17way alignment primate set, the higher
+      Output: "NSFP_phyloP100way_vertebrate_rankscore"
+    - Input: "phyloP17way_primate"
+      Help:
+        "a conservation score based on 17way alignment primate set, the higher
         the more conservative. Scores range from -13.362 to 0.756 in dbNSFP."
-      Name: "NSFP_phyloP17way_primate"
-    "phyloP17way_primate_rankscore":
-      Help: "the rank of the phyloP17way_primate score among all phyloP17way_primate
+      Output: "NSFP_phyloP17way_primate"
+    - Input: "phyloP17way_primate_rankscore"
+      Help:
+        "the rank of the phyloP17way_primate score among all phyloP17way_primate
         scores in dbNSFP."
-      Name: "NSFP_phyloP17way_primate_rankscore"
-    "phyloP30way_mammalian":
-      Help: "phyloP (phylogenetic p-values) conservation score based on the multiple
+      Output: "NSFP_phyloP17way_primate_rankscore"
+    - Input: "phyloP30way_mammalian"
+      Help:
+        "phyloP (phylogenetic p-values) conservation score based on the multiple
         alignments of 30 mammalian genomes (including human). The larger the score,
         \ the more conserved the site. Scores range from -20 to 1.312 in dbNSFP."
-      Name: "NSFP_phyloP30way_mammalian"
-    "phyloP30way_mammalian_rankscore":
-      Help: "phyloP30way_mammalian scores were ranked among all phyloP30way_mammalian
+      Output: "NSFP_phyloP30way_mammalian"
+    - Input: "phyloP30way_mammalian_rankscore"
+      Help:
+        "phyloP30way_mammalian scores were ranked among all phyloP30way_mammalian
         scores in dbNSFP. The rankscore is the ratio of the rank of the  score over
         the total number of phyloP30way_mammalian scores in dbNSFP."
-      Name: "NSFP_phyloP30way_mammalian_rankscore"
-    "refcodon":
+      Output: "NSFP_phyloP30way_mammalian_rankscore"
+    - Input: "refcodon"
       Help: "reference codon"
-      Name: "NSFP_refcodon"
+      Output: "NSFP_refcodon"

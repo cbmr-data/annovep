@@ -46,7 +46,8 @@ class BaseModel(pydantic.BaseModel):
 
 
 class _AnnotationFieldModel(BaseModel):
-    name: str = Field(alias="Name")
+    input_key: str = Field(alias="Input")
+    output_key: Optional[str] = Field(alias="Output", default=None)
     fieldtype: Optional[FieldType] = Field(alias="FieldType", default=None)
     help: Optional[str] = Field(alias="Help", default=None)
     # Normalize lists of items using this separator
@@ -63,9 +64,7 @@ class _AnnotationBaseModel(BaseModel):
     rank: int = Field(alias="Rank", default=0)
     fieldtype: FieldType = Field(alias="FieldType", default="str")
     digits: int = Field(alias="Digits", default=-1)
-    fields: Dict[str, _AnnotationFieldModel] = Field(
-        alias="Fields", default_factory=dict
-    )
+    fields: List[_AnnotationFieldModel] = Field(alias="Fields", default_factory=dict)
     enabled: Literal[True, False, "mandatory"] = Field(alias="Enabled", default=True)
     options: List[str] = Field(alias="Options", default_factory=list)
     # Optional data source
@@ -77,6 +76,11 @@ class _AnnotationBaseModel(BaseModel):
         name: str,
         variables: VariablesType,
     ) -> Annotation:
+        log = logging.getLogger(__name__)
+        for field in self.fields:
+            if field.input_key == field.output_key:
+                log.warning("Redundant Output in %s:%s", name, field.input_key)
+
         return Annotation(
             type=self._get_type(),
             name=name,
@@ -92,17 +96,19 @@ class _AnnotationBaseModel(BaseModel):
             AnnotationField(
                 input_path=self._get_path(
                     group=name,
-                    field=key,
+                    field=field.input_key,
                     source=self.source if field.source is None else field.source,
                 ),
-                output_key=field.name,
+                output_key=field.input_key
+                if field.output_key is None
+                else field.output_key,
                 type=self.fieldtype if field.fieldtype is None else field.fieldtype,
                 help=field.help,
                 split_by=field.split_by,
                 thousands_sep=field.thousands_sep,
                 digits=self.digits if field.digits is None else field.digits,
             )
-            for key, field in self.fields.items()
+            for field in self.fields
         ]
 
     def _get_type(self) -> AnnotationTypes:
@@ -184,9 +190,10 @@ class _CustomModel(_AnnotationBaseModel):
         file, _ = self._get_files(variables=variables)
         options = [*self.options, "--custom"]
         params = [file, name, self.type, self.mode, "0"]
-        for name in self.fields:
-            if not (name.startswith(":") and name.endswith(":")):
-                params.append(name)
+        for field in self.fields:
+            key = field.input_key
+            if not (key.startswith(":") and key.endswith(":")):
+                params.append(key)
 
         options.append(",".join(params))
         return options
@@ -334,5 +341,18 @@ def load_annotations(
                     log.warning("Overriding settings for annotations %r", name)
 
                 annotations[name] = annotation
+
+    input_paths: set[tuple[str, ...]] = set()
+    output_keys: set[str] = set()
+    for annotation in annotations.values():
+        for field in annotation.fields:
+            input_path = tuple(field.input_path)
+            if input_path in input_paths:
+                log.warning("Multiple values read from %r", input_path)
+            if field.output_key in output_keys:
+                log.error("Multiple values written to %r", field.output_key)
+
+            input_paths.add(input_path)
+            output_keys.add(field.output_key)
 
     return sorted(annotations.values(), key=lambda it: it.rank)
