@@ -285,8 +285,8 @@ def _apply_variables(
     variables: Dict[str, Union[str, Path]],
 ) -> list[str]:
     result: list[str] = []
-    last_value: str | None = None
     for value in values:
+        last_value = ""
         while value != last_value:
             last_value = value
             value = value.format_map(variables)
