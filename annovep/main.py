@@ -267,7 +267,7 @@ def main(argv: list[str]) -> int:
 
     log = logging.getLogger("annovep")
     try:
-        annotations = load_annotations(log, args.annotations, variables)
+        annotations = load_annotations(args.annotations, variables)
     except AnnotationError as error:
         log.error("error while loading annotations: %s", error)
         return 1

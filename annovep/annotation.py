@@ -303,10 +303,10 @@ def _apply_variables(
 
 
 def load_annotations(
-    log: logging.Logger,
     filepaths: List[Path],
     variables: Dict[str, Union[str, Path]],
 ) -> List[Annotation]:
+    log = logging.getLogger(__name__)
     yaml = ruamel.yaml.YAML(typ="safe", pure=True)
     yaml.version = (1, 1)
 
