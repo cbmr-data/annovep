@@ -23,7 +23,8 @@ class EnableAction(argparse.Action):
         values: str | Sequence[object] | None,
         option_string: str | None = None,
     ) -> None:
-        getattr(namespace, self.dest)[values] = True
+        assert isinstance(values, str)
+        getattr(namespace, self.dest)[values.lower()] = True
 
 
 # Enable annotation with `--disable Name`
@@ -35,7 +36,8 @@ class DisableAction(argparse.Action):
         values: str | Sequence[object] | None,
         option_string: str | None = None,
     ) -> None:
-        getattr(namespace, self.dest)[values] = False
+        assert isinstance(values, str)
+        getattr(namespace, self.dest)[values.lower()] = False
 
 
 def filter_annotations(
@@ -43,14 +45,17 @@ def filter_annotations(
     annotations: list[Annotation],
     enabled: dict[str, bool],
 ) -> bool:
+    enabled = dict(enabled)
+    names: set[str] = set(it.name.lower() for it in annotations)
+    set_all = enabled.pop("*", None)
+    if set_all is not None:
+        enabled.update(dict.fromkeys(names, set_all))
+
     result: list[Annotation] = []
-    names: set[str] = set()
     for annotation in annotations:
         name = annotation.name
-        key = name.lower()
-        names.add(key)
 
-        if enabled.get(key, annotation.enabled):
+        if enabled.get(name.lower(), annotation.enabled):
             log.info("   [✓] %s", name)
             result.append(annotation)
         else:
