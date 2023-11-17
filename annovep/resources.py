@@ -21,7 +21,6 @@
 #
 from __future__ import annotations
 
-import os
 import sys
 from importlib import resources
 from typing import TYPE_CHECKING
