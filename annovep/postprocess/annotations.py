@@ -14,6 +14,7 @@ from annovep.postprocess import consequences
 from annovep.postprocess.reader import (
     JSON,
     Consequence,
+    CustomAnnotation,
     MetaData,
     ParsedRecord,
     VCFRecord,
@@ -430,6 +431,9 @@ class Annotator:
                         **fields,
                     }
 
+                    # FIXME: BED annotation requires handling multiple records (gnomAD)
+                    break
+
         return output
 
     def _parse_neighbouring_genes(self, vep: VEPRecord, nnearest: int = 3) -> None:
@@ -473,11 +477,16 @@ class Annotator:
                 else:
                     neighbours_overlap.add(name)
 
-            record.fields = {
-                "overlapping": sorted(neighbours_overlap),
-                "upstream": _neighbours_to_list(neighbours_upstream),
-                "downstream": _neighbours_to_list(neighbours_downstream),
-            }
+        neighbours[:] = [
+            CustomAnnotation(
+                name="neighbours",
+                fields={
+                    "overlapping": sorted(neighbours_overlap),
+                    "upstream": _neighbours_to_list(neighbours_upstream),
+                    "downstream": _neighbours_to_list(neighbours_downstream),
+                },
+            )
+        ]
 
     def _get_sample_genotypes(self, vcf: VCFRecord, allele: str) -> JSON:
         alt_genotype = str(vcf.Alts.index(allele) + 1)
