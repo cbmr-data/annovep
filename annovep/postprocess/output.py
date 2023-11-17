@@ -211,7 +211,7 @@ class SQLOutput(Output):
 
         self._handle.close()
 
-    def process_json(self, data: dict[Any, Any]) -> None:
+    def process_json(self, data: dict[str, Any]) -> None:
         data = dict(data)
 
         # Remove any sample specific information and leave only summary information
@@ -277,7 +277,10 @@ class SQLOutput(Output):
                     )
 
     @staticmethod
-    def _worst_consequence(consequence_a, consequence_b):
+    def _worst_consequence(
+        consequence_a: int | None,
+        consequence_b: int | None,
+    ) -> int | None:
         if consequence_a is None:
             return consequence_b
         elif consequence_b is None:
@@ -421,7 +424,7 @@ class SQLOutput(Output):
             """
         )
 
-        metadata = [
+        metadata: list[tuple[str, int | str]] = [
             ("Version", VERSION),
             ("Date[VCF]", self._date_vcf),
             ("Date[Annotation]", self._date_vep),
@@ -441,9 +444,9 @@ class SQLOutput(Output):
             )
 
     @staticmethod
-    def _build_consequence_ranks():
+    def _build_consequence_ranks() -> dict[str, int]:
         """Returns consequences with a human friendly ranking: bad > insignificant."""
-        human_friendly_ranks = collections.OrderedDict()
+        human_friendly_ranks: dict[str, int] = collections.OrderedDict()
         for rank, name in enumerate(reversed(list(consequences.ranks()))):
             human_friendly_ranks[name] = rank
 
