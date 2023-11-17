@@ -7,9 +7,8 @@ from typing import TYPE_CHECKING
 from annovep.utils import open_ro
 
 if TYPE_CHECKING:
-    import argparse
-
     from annovep.annotation import Annotation
+    from annovep.args import Args
 
 _RE_CONTIG_ID = re.compile("^(##contig=<.*ID=)([^,]+)(.*>)$", re.I)
 
@@ -28,7 +27,7 @@ def fix_contig_name(line: str) -> tuple[str, str | None, str | None]:
         before, name, after = match.groups()
         new_name = encode_contig_name(name)
 
-        return "".join((before, new_name, after, "\n")), name, new_name
+        return f"{before}{new_name}{after}\n", name, new_name
 
     return line, None, None
 
@@ -38,7 +37,7 @@ def is_valid(sequence: str, whitelist: str = "ACGTNacgtn.,*") -> bool:
     return not set(sequence).difference(whitelist)
 
 
-def main(args: argparse.Namespace, anotations: list[Annotation]) -> int:
+def main(args: Args, anotations: list[Annotation]) -> int:
     n_decoys = 0
     n_bad_contigs = 0
     n_bad_contigs_vcf = 0
@@ -76,11 +75,11 @@ def main(args: argparse.Namespace, anotations: list[Annotation]) -> int:
 
         if line and not samples:
             # No header in input; assign arbitrary names to samples
-            samples = ["Sample{}".format(i) for i in range(line.count("\t") - 8)]
+            samples = [f"Sample{i}" for i in range(line.count("\t") - 8)]
 
         # Print fake variant containing meta data for use during post-processing
         samples = ";".join(samples) or "."
-        print("chr1\t1\tAnnoVEP:Samples\tA\t.\t.\t.\t{}".format(samples))
+        print(f"chr1\t1\tAnnoVEP:Samples\tA\t.\t.\t.\t{samples}")
 
         while line:
             n_records += 1
@@ -105,12 +104,12 @@ def main(args: argparse.Namespace, anotations: list[Annotation]) -> int:
             print(new_chrom, rest, sep="\t", end="")
 
             if n_records % 100_000 == 0:
-                log.info("Read %s variants; at %r", "{:,}".format(n_records), chrom)
+                log.info("Read %s variants; at %r", f"{n_records:,}", chrom)
 
             line = handle.readline()
 
     def _fmt(value: int) -> str:
-        return "{:,}".format(value)
+        return f"{value:,}"
 
     log.info("Read %s variants", _fmt(n_records))
     log.info("Renamed %s contigs with bad names", _fmt(n_bad_contigs))

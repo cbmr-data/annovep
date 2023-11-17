@@ -1,3 +1,5 @@
+# WORKAROUND: pydantic requies List, Union, etc, so disable ruff lints:
+# ruff: noqa: UP006,UP007
 from __future__ import annotations
 
 import json
@@ -110,8 +112,9 @@ class VEPReader:
             raw_json = json.loads(line)
             vep_record = VEPRecord.model_validate(raw_json, strict=True)
         except ValidationError as error:
-            self._log.error("invalid record(s):\n%s", pprint.pformat(error.errors()))
-            raise SystemExit(1)
+            raise ValidationError(
+                "invalid record(s): %s", pprint.pformat(error.errors())
+            ) from error
 
         assert isinstance(vep_record.input, str)
         vcf_record = self._parse_vcf_record(vep_record.input)
@@ -127,11 +130,11 @@ class VEPReader:
 
     def _parse_vcf_record(self, line: str) -> VCFRecord:
         fields = line.rstrip("\r\n").split("\t")
-        chr, pos, id, ref, alt, qual, filters, info, *fmt_and_samples = fields
-        chr = decode_contig_name(chr)
+        contig, pos, id_, ref, alt, qual, filters, info, *fmt_and_samples = fields
+        contig = decode_contig_name(contig)
 
         # VCF record excluding any (identifying) sample information
-        line = "\t".join((chr, pos, id, ref, alt, qual, filters, info))
+        line = f"{contig}\t{pos}\t{id_}\t{ref}\t{alt}\t{qual}\t{filters}\t{info}"
 
         samples: list[dict[str, str]] = []
         if fmt_and_samples:
@@ -141,9 +144,9 @@ class VEPReader:
 
         return VCFRecord(
             Input=line,
-            Chr=chr,
+            Chr=contig,
             Pos=int(pos),
-            ID=[] if id == "." else id.split(";"),
+            ID=[] if id_ == "." else id_.split(";"),
             Ref=ref,
             # . is treated as a actual value, rather than an empty list. This is done so
             # that (limited) information can be retrieved for non-specific variants.

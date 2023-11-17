@@ -9,14 +9,15 @@ from typing import IO, TYPE_CHECKING, AnyStr
 from annovep.utils import cmd_to_str, join_procs, update_required
 
 if TYPE_CHECKING:
-    import argparse
+    from pathlib import Path
 
     from annovep.annotation import Annotation
+    from annovep.args import Args
 
 
-def exec(
+def popen(
     log: logging.Logger,
-    command: list[str],
+    command: list[str | Path],
     stdin: None | int | IO[AnyStr] = subprocess.DEVNULL,
     stdout: None | int | IO[AnyStr] = None,
 ) -> subprocess.Popen[bytes]:
@@ -30,13 +31,13 @@ def exec(
     )
 
 
-def exec_self(
+def popen_self(
     log: logging.Logger,
-    command: list[str],
+    command: list[str | Path],
     stdin: None | int | IO[AnyStr] = subprocess.DEVNULL,
     stdout: None | int | IO[AnyStr] = None,
 ) -> subprocess.Popen[bytes]:
-    return exec(
+    return popen(
         log=log,
         command=[sys.executable, "-m", "annovep", *command],
         stdin=stdin,
@@ -45,9 +46,12 @@ def exec_self(
 
 
 def run_vep(
-    args: argparse.Namespace,
+    *,
     log: logging.Logger,
+    args: Args,
     annotations: list[Annotation],
+    out_vep_json: str,
+    out_vep_html: str,
 ) -> bool:
     command = [
         "vep",
@@ -71,9 +75,9 @@ def run_vep(
         "--assembly",
         "GRCh38",
         "--output_file",
-        args.out_vep_json,
+        out_vep_json,
         "--stats_file",
-        args.out_vep_html,
+        out_vep_html,
     ]
 
     if args.fork > 0:
@@ -87,7 +91,7 @@ def run_vep(
     for annotation in annotations:
         command.extend(annotation.params)
 
-    preproc = exec_self(
+    preproc = popen_self(
         log=log,
         command=[
             "--do",
@@ -99,16 +103,21 @@ def run_vep(
         stdout=subprocess.PIPE,
     )
 
-    vepproc = exec(log=log, command=command, stdin=preproc.stdout)
+    vepproc = popen(log=log, command=command, stdin=preproc.stdout)
 
     return join_procs(log, [preproc, vepproc])
 
 
-def run_post_proc(args: argparse.Namespace, log: logging.Logger) -> bool:
+def run_post_proc(
+    *,
+    log: logging.Logger,
+    args: Args,
+    out_vep_json: str,
+) -> bool:
     command = [
         "--do",
         "post-process",
-        args.out_vep_json,
+        out_vep_json,
         args.out_prefix,
         "--log-level",
         args.log_level,
@@ -116,13 +125,12 @@ def run_post_proc(args: argparse.Namespace, log: logging.Logger) -> bool:
         args.data_liftover,
         "--vcf-timestamp",
         repr(args.in_file.stat().st_mtime),
+        "--data-liftover",
+        args.data_liftover,
     ]
 
     if args.include_json:
         command.append("--include-json")
-
-    if args.data_liftover is not None:
-        command += ["--data-liftover", args.data_liftover]
 
     for annotation in args.annotations:
         command += ["--annotations", annotation]
@@ -133,12 +141,12 @@ def run_post_proc(args: argparse.Namespace, log: logging.Logger) -> bool:
     for fmt in args.output_format:
         command += ["--output-format", fmt]
 
-    proc = exec_self(log=log, command=command)
+    proc = popen_self(log=log, command=command)
 
     return join_procs(log, [proc])
 
 
-def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
+def main(args: Args, annotations: list[Annotation]) -> int:
     log = logging.getLogger("annovep")
 
     any_errors = False
@@ -152,21 +160,27 @@ def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
     if any_errors:
         return 1
 
-    args.out_vep_json = f"{args.out_prefix}.vep.json.gz"
-    args.out_vep_html = f"{args.out_prefix}.vep.html"
+    out_vep_json = f"{args.out_prefix}.vep.json.gz"
+    out_vep_html = f"{args.out_prefix}.vep.html"
 
     if update_required(
-        output=args.out_vep_json,
-        inputs=[args.in_file] + args.annotations,
+        output=out_vep_json,
+        inputs=[args.in_file, *args.annotations],
     ):
         log.info("Running VEP")
-        if not run_vep(args, log, annotations):
+        if not run_vep(
+            log=log,
+            args=args,
+            annotations=annotations,
+            out_vep_json=out_vep_json,
+            out_vep_html=out_vep_html,
+        ):
             return 1
     else:
         log.info("VEP annotations already up to date")
 
     log.info("Running post-processing")
-    if not run_post_proc(args, log):
+    if not run_post_proc(log=log, args=args, out_vep_json=out_vep_json):
         return 1
 
     return 0

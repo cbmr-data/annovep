@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 from annovep.postprocess import output
 from annovep.postprocess.annotations import Annotator
 from annovep.postprocess.reader import VEPReader
 
 if TYPE_CHECKING:
-    import argparse
-
     from annovep.annotation import Annotation
+    from annovep.args import Args
 
 
-def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
+def main(args: Args, annotations: list[Annotation]) -> int:
     if not any(fmt.startswith("sql") for fmt in args.output_format):
         args.include_json = False
 
@@ -24,10 +23,6 @@ def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
     if not output_formats:
         output_formats = ["tsv"]
 
-    if args.out_prefix is None and len(output_formats) > 1:
-        log.error("[out_prefix] must be set when writing more than one format")
-        return 1
-
     vep_reader = VEPReader(args.in_file)
 
     annotator = Annotator(
@@ -36,7 +31,7 @@ def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
         liftover_cache=args.data_liftover,
     )
 
-    writers: Dict[str, output.Output] = {}
+    writers: dict[str, output.Output] = {}
     for key in output_formats:
         cls = output.FORMATS[key]
         writer = cls(

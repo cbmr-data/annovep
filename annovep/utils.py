@@ -63,7 +63,7 @@ def open_rb(filename: str | Path) -> IO[bytes]:
         return handle
 
 
-def open_ro(filename: str) -> IO[str]:
+def open_ro(filename: str | Path) -> IO[str]:
     return io.TextIOWrapper(open_rb(filename))
 
 

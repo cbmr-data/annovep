@@ -22,6 +22,7 @@ from annovep.postprocess.reader import (
 
 if TYPE_CHECKING:
     import logging
+    from pathlib import Path
 
 _RE_ALLELE = re.compile(r"[/|]")
 
@@ -53,7 +54,7 @@ class Annotator:
     _counter: dict[str, int]
     _fields_collected: tuple[AnnotationField, ...]
     _fields_derived: tuple[AnnotationField, ...]
-    _liftover_cache: str | None
+    _liftover_cache: Path | None
     _liftover: liftover.ChainFile | None
     fields: tuple[AnnotationField, ...]
     groups: tuple[Annotation, ...]
@@ -62,7 +63,7 @@ class Annotator:
         self,
         annotations: list[Annotation],
         metadata: MetaData | None = None,
-        liftover_cache: str | None = None,
+        liftover_cache: Path | None = None,
     ) -> None:
         self.groups = tuple(annotations)
         self._consequence_ranks = consequences.ranks()
@@ -285,7 +286,7 @@ class Annotator:
         frequencies: dict[int, str] = {}
         total = sum(allele_counts.values())
         for key, value in allele_counts.items():
-            frequencies[key] = "{:.4g}".format(value / total)
+            frequencies[key] = f"{value / total:.4g}"
 
         return frequencies
 
@@ -331,6 +332,7 @@ class Annotator:
 
     def _get_allele_consequence(
         self,
+        *,
         vep: VEPRecord,
         allele: str,
         canonical_only: bool = False,

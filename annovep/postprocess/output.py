@@ -7,7 +7,7 @@ import logging
 import sqlite3
 import sys
 import zlib
-from typing import TYPE_CHECKING, Sequence, cast
+from typing import TYPE_CHECKING, List, Sequence, cast
 
 from typing_extensions import override
 
@@ -15,6 +15,8 @@ from annovep._version import VERSION
 from annovep.postprocess import consequences
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from annovep.postprocess.annotations import Annotator
     from annovep.postprocess.reader import JSON
 
@@ -30,7 +32,7 @@ class Output:
     def __init__(
         self,
         annotations: Annotator,
-        out_prefix: str | None,
+        out_prefix: str | Path | None,
         extension: str,
     ) -> None:
         self.annotations = annotations
@@ -62,7 +64,7 @@ class Output:
         pass
 
     def process_row(self, data: JSON) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _print(self, line: str = "", *args: object) -> None:
         if args:
@@ -72,7 +74,7 @@ class Output:
 
 
 class JSONOutput(Output):
-    def __init__(self, annotations: Annotator, out_prefix: str | None) -> None:
+    def __init__(self, annotations: Annotator, out_prefix: str | Path | None) -> None:
         super().__init__(annotations, out_prefix, ".json")
 
     @override
@@ -85,7 +87,7 @@ class JSONOutput(Output):
 
 
 class TSVOutput(Output):
-    def __init__(self, annotations: Annotator, out_prefix: str | None) -> None:
+    def __init__(self, annotations: Annotator, out_prefix: str | Path | None) -> None:
         super().__init__(annotations, out_prefix, ".tsv")
 
         self._print("#{}", "\t".join([field.output_key for field in self.fields]))
@@ -106,7 +108,7 @@ class TSVOutput(Output):
     @staticmethod
     def _to_string(value: object) -> str:
         if isinstance(value, (tuple, list)):
-            return ";".join(map(str, value or "."))  # type: ignore
+            return ";".join(map(str, cast(List[object], value) or "."))
         elif value is None:
             return "."
 
@@ -120,7 +122,7 @@ class SQLOutput(Output):
         "Pos": "Hg38_pos",
     }
 
-    def __init__(self, annotations: Annotator, out_prefix: str | None) -> None:
+    def __init__(self, annotations: Annotator, out_prefix: str | Path | None) -> None:
         super().__init__(annotations, out_prefix, ".sql")
 
         self._consequence_ranks = self._build_consequence_ranks()
@@ -231,7 +233,7 @@ class SQLOutput(Output):
             self._n_json,
             self._to_string(chrom),
             int(pos),
-            "X'{}'".format(blob),
+            f"X'{blob}'",
         )
 
         self._n_json += 1
@@ -424,7 +426,7 @@ class SQLOutput(Output):
                 contigs.append(("hg19", name, variants))
 
         # Collect hg19 only contigs; unmapped variants are ignored
-        for name in sorted(self._contigs["hg19"].keys() - overlap - set([None])):
+        for name in sorted(self._contigs["hg19"].keys() - overlap - {None}):
             contigs.append(("hg19", name, self._contigs["hg19"][name]))
 
         for primary_key, (build, name, variants) in enumerate(contigs):
@@ -494,7 +496,7 @@ class SQLOutput(Output):
 
 
 class SQLite3Output(SQLOutput):
-    def __init__(self, annotations: Annotator, out_prefix: str) -> None:
+    def __init__(self, annotations: Annotator, out_prefix: str | Path | None) -> None:
         self._conn = sqlite3.connect(f"{out_prefix}.sqlite3")
         self._curs = self._conn.cursor()
 

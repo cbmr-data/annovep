@@ -1,3 +1,5 @@
+# WORKAROUND: pydantic requies List, Union, etc, so disable ruff lints:
+# ruff: noqa: UP006,UP007
 from __future__ import annotations
 
 import logging
@@ -141,7 +143,7 @@ class _AnnotationBaseModel(BaseModel):
         return fields
 
     def _get_type(self) -> AnnotationTypes:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _get_files(self, *, variables: VariablesType) -> list[str]:
         return []
@@ -334,7 +336,7 @@ def _apply_variables(
 
 def load_annotations(
     filepaths: List[Path],
-    variables: Dict[str, Union[str, Path]],
+    variables: Dict[str, Path],
 ) -> List[Annotation]:
     log = logging.getLogger(__name__)
     yaml = ruamel.yaml.YAML(typ="safe", pure=True)
@@ -361,9 +363,9 @@ def load_annotations(
                             input=err["input"],
                             msg=err["msg"],
                         )
-                    )
+                    ) from error
 
-                raise AssertionError("should not happen")
+                raise AssertionError("should not happen") from error
 
             for name, obj in result.root.items():
                 annotation = obj.to_annotation(name=name, variables=dict(variables))
