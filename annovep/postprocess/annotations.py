@@ -39,6 +39,8 @@ class Annotator:
         "_builtin_sample_genotypes",
         "_consequence_ranks",
         "_counter",
+        "_fields_collected",
+        "_fields_derived",
         "_liftover_cache",
         "_liftover",
         "fields",
@@ -49,10 +51,12 @@ class Annotator:
     _builtin_sample_genotypes: list[AnnotationField]
     _consequence_ranks: dict[str, int]
     _counter: dict[str, int]
+    _fields_collected: tuple[AnnotationField, ...]
+    _fields_derived: tuple[AnnotationField, ...]
     _liftover_cache: str | None
     _liftover: liftover.ChainFile | None
-    fields: list[AnnotationField]
-    groups: list[Annotation]
+    fields: tuple[AnnotationField, ...]
+    groups: tuple[Annotation, ...]
 
     def __init__(
         self,
@@ -60,7 +64,7 @@ class Annotator:
         metadata: MetaData | None = None,
         liftover_cache: str | None = None,
     ) -> None:
-        self.groups = annotations
+        self.groups = tuple(annotations)
         self._consequence_ranks = consequences.ranks()
 
         self._builtin_sample_genotypes = []
@@ -71,9 +75,9 @@ class Annotator:
         if metadata is not None:
             self._apply_metadata(metadata)
 
-        self.fields: list[AnnotationField] = []
+        fields: list[AnnotationField] = []
         for annotation in self.groups:
-            self.fields.extend(annotation.fields)
+            fields.extend(annotation.fields)
 
             if annotation.type == "builtin":
                 if annotation.name == "SampleGenotypes":
@@ -81,6 +85,9 @@ class Annotator:
                 elif annotation.name == "Liftover":
                     self._builtin_liftover = True
 
+        self.fields = tuple(fields)
+        self._fields_derived = tuple(it for it in self.fields if it.derived_from)
+        self._fields_collected = tuple(it for it in self.fields if not it.derived_from)
         self._counter = {field.output_key: 0 for field in self.fields}
 
     def _apply_metadata(self, metadata: MetaData) -> None:
@@ -93,6 +100,7 @@ class Annotator:
                             input_path=["genotypes", f"GTS_{sample}"],
                             output_key=f"GTS_{sample}",
                             type="str",
+                            derived_from=[],
                             help=f"Genotypes for {sample!r}",
                         )
                         for sample in metadata["samples"]
@@ -107,7 +115,7 @@ class Annotator:
     def annotate(self, record: ParsedRecord) -> Generator[JSON, None, None]:
         for data in self._collect_annotations(record):
             output: JSON = {}
-            for field in self.fields:
+            for field in self._fields_collected:
                 source = data
                 for key in field.input_path:
                     if source is not None:
@@ -124,6 +132,25 @@ class Annotator:
                     self._counter[field.output_key] += 1
 
                 output[field.output_key] = source
+
+            for field in self._fields_derived:
+                values: list[int | float] = []
+                for key in field.derived_from:
+                    value = output[key]
+                    if value is not None:
+                        assert isinstance(value, (float, int))
+                        values.append(value)
+
+                value = None
+                if field.input_path[-1] == ":min:":
+                    value = min(values, default=None)
+                elif field.input_path[-1] == ":max:":
+                    value = max(values, default=None)
+
+                if value is not None:
+                    self._counter[field.output_key] += 1
+
+                output[field.output_key] = value
 
             yield output
 

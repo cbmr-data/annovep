@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -58,6 +59,10 @@ class _AnnotationFieldModel(BaseModel):
     digits: Optional[int] = Field(alias="Digits", default=None)
     # Optional data source
     source: Optional[DataSource] = Field(alias="Source", default=None)
+    # Optional glob for output keys
+    derived_from: Optional[Union[str, List[str]]] = Field(
+        alias="DerivedFrom", default=None
+    )
 
 
 class _AnnotationBaseModel(BaseModel):
@@ -76,11 +81,6 @@ class _AnnotationBaseModel(BaseModel):
         name: str,
         variables: VariablesType,
     ) -> Annotation:
-        log = logging.getLogger(__name__)
-        for field in self.fields:
-            if field.input_key == field.output_key:
-                log.warning("Redundant Output in %s:%s", name, field.input_key)
-
         return Annotation(
             type=self._get_type(),
             name=name,
@@ -92,24 +92,53 @@ class _AnnotationBaseModel(BaseModel):
         )
 
     def _get_fields(self, name: str) -> list[AnnotationField]:
-        return [
-            AnnotationField(
+        derived_fields: list[tuple[AnnotationField, str | list[str]]] = []
+
+        log = logging.getLogger(__name__)
+        fields: list[AnnotationField] = []
+        for it in self.fields:
+            if it.input_key == it.output_key:
+                log.warning("Redundant Output key in %s:%s", name, it.input_key)
+            elif it.derived_from and it.input_key not in (":min:", ":max:"):
+                log.error("DerivedFrom specified but Input is %r", it.input_key)
+                raise AnnotationError(it)
+
+            field = AnnotationField(
                 input_path=self._get_path(
                     group=name,
-                    field=field.input_key,
-                    source=self.source if field.source is None else field.source,
+                    field=it.input_key,
+                    source=self.source if it.source is None else it.source,
                 ),
-                output_key=field.input_key
-                if field.output_key is None
-                else field.output_key,
-                type=self.fieldtype if field.fieldtype is None else field.fieldtype,
-                help=field.help,
-                split_by=field.split_by,
-                thousands_sep=field.thousands_sep,
-                digits=self.digits if field.digits is None else field.digits,
+                output_key=it.input_key if it.output_key is None else it.output_key,
+                type=self.fieldtype if it.fieldtype is None else it.fieldtype,
+                derived_from=[],
+                help=it.help,
+                split_by=it.split_by,
+                thousands_sep=it.thousands_sep,
+                digits=self.digits if it.digits is None else it.digits,
             )
-            for field in self.fields
-        ]
+
+            fields.append(field)
+            if it.derived_from:
+                derived_fields.append((field, it.derived_from))
+
+        for it, derived_from in derived_fields:
+            if isinstance(derived_from, str):
+                for other in fields:
+                    if other is not it and fnmatch(other.output_key, derived_from):
+                        it.derived_from.append(other.output_key)
+            else:
+                names = {other.output_key for other in fields}
+                unknown = set(derived_from) - names
+                if unknown:
+                    log.error("Unknown field names for %r: %s", it.output_key, unknown)
+                    raise AnnotationError(it)
+
+                it.derived_from = derived_from
+
+            log.debug("%r derived from fields %r", it.output_key, it.derived_from)
+
+        return fields
 
     def _get_type(self) -> AnnotationTypes:
         raise NotImplementedError()
@@ -249,6 +278,7 @@ class AnnotationField:
     output_key: str
     type: FieldType
     help: Optional[str]
+    derived_from: list[str]
     # Normalize lists of items using this separator
     split_by: Optional[str] = None
     # Enable thousands separator
