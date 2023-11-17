@@ -51,7 +51,7 @@ def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
         for record in vep_reader:
             if args.include_json:
                 for writer in writers.values():
-                    writer.process_json(record)
+                    writer.process_json(record.json)
 
             for row in annotator.annotate(record):
                 for writer in writers.values():

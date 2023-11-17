@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import pprint
 import re
@@ -21,6 +22,7 @@ JSON: TypeAlias = Dict[
 class ParsedRecord:
     vcf: VCFRecord
     vep: VEPRecord
+    json: JSON
 
 
 @dataclass
@@ -103,18 +105,22 @@ class VEPReader:
         # more reasonable for downstream compatibility
         line = nan_re.sub(b":null", line)
         try:
-            vep_record = VEPRecord.model_validate_json(line, strict=True)
+            raw_json = json.loads(line)
+            vep_record = VEPRecord.model_validate(raw_json, strict=True)
         except ValidationError as error:
             self._log.error("invalid record(s):\n%s", pprint.pformat(error.errors()))
             raise SystemExit(1)
 
         assert isinstance(vep_record.input, str)
         vcf_record = self._parse_vcf_record(vep_record.input)
+        # Truncate sample information
         vep_record.input = vcf_record.Input
+        raw_json["input"] = vcf_record.Input
 
         return ParsedRecord(
             vcf=vcf_record,
             vep=vep_record,
+            json=raw_json,
         )
 
     def _parse_vcf_record(self, line: str) -> VCFRecord:
