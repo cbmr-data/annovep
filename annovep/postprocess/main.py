@@ -62,4 +62,6 @@ def main(args: argparse.Namespace, annotations: list[Annotation]) -> int:
     except BrokenPipeError:
         pass
 
+    annotator.finalize(log)
+
     return 0

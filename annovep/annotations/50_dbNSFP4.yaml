@@ -14,7 +14,7 @@ dbNSFP4:
     "APPRIS":
       Help: "APPRIS annotation for the transcripts matching Ensembl_transcriptid
         Multiple entries separated by \";\". Potential values: principal1, principal2,
-        \ principal3, principal4, principal5, alternative1, alternative2.  See 
+        principal3, principal4, principal5, alternative1, alternative2.  See
         https://useast.ensembl.org/info/genome/genebuild/transcript_quality_tags.html"
       Name: "NSFP_APPRIS"
     "Aloft_Confidence":

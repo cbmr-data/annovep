@@ -55,7 +55,9 @@ def filter_annotations(
     for annotation in annotations:
         name = annotation.name
 
-        if enabled.get(name.lower(), annotation.enabled):
+        if annotation.enabled == "mandatory":
+            result.append(annotation)
+        elif enabled.get(name.lower(), annotation.enabled):
             log.info("   [✓] %s", name)
             result.append(annotation)
         else:

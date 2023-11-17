@@ -15,7 +15,17 @@ from annovep.resources import access_resources
 # Built-in annotations derived from input
 _BUILTINS = {
     "samplegenotypes": "SampleGenotypes",
+    "liftover": "Liftover",
 }
+
+DataSource: TypeAlias = Literal[
+    "canonical_consequence",
+    "consequence",
+    "derived",
+    "genotypes",
+    "input",
+    "liftover",
+]
 
 
 FieldType: TypeAlias = Literal["str", "int", "float"]
@@ -45,6 +55,8 @@ class _AnnotationFieldModel(BaseModel):
     thousands_sep: bool = Field(alias="ThousandsSep", default=False)
     # Floating point precision (int/float only)
     digits: Optional[int] = Field(alias="Digits", default=None)
+    # Optional data source
+    source: Optional[DataSource] = Field(alias="Source", default=None)
 
 
 class _AnnotationBaseModel(BaseModel):
@@ -55,7 +67,9 @@ class _AnnotationBaseModel(BaseModel):
         alias="Fields", default_factory=dict
     )
     enabled: Literal[True, False, "mandatory"] = Field(alias="Enabled", default=True)
-    options: List[str] = Field(alias="Command", default_factory=list)
+    options: List[str] = Field(alias="Options", default_factory=list)
+    # Optional data source
+    source: Optional[DataSource] = Field(alias="Source", default=None)
 
     def to_annotation(
         self,
@@ -67,16 +81,20 @@ class _AnnotationBaseModel(BaseModel):
             type=self._get_type(),
             name=name,
             rank=self.rank,
-            fields=self._get_fields(),
+            fields=self._get_fields(name=name),
             enabled=self.enabled,
             files=self._get_files(variables=variables),
             params=self._get_options(name=name, variables=variables),
         )
 
-    def _get_fields(self) -> list[AnnotationField]:
+    def _get_fields(self, name: str) -> list[AnnotationField]:
         return [
             AnnotationField(
-                input_key=key,
+                input_path=self._get_path(
+                    group=name,
+                    field=key,
+                    source=self.source if field.source is None else field.source,
+                ),
                 output_key=field.name,
                 type=self.fieldtype if field.fieldtype is None else field.fieldtype,
                 help=field.help,
@@ -96,12 +114,15 @@ class _AnnotationBaseModel(BaseModel):
     def _get_options(self, *, name: str, variables: VariablesType) -> list[str]:
         return self.options
 
-    def _get_path(self, *, group_name: str, field_name: str) -> tuple[str]:
-        return (field_name,)
+    def _get_path(self, *, group: str, field: str, source: str | None) -> list[str]:
+        if source is None:
+            raise AnnotationError(f"no source specified for {group}")
+
+        return [source, field]
 
 
 class _BasicAnnotationModel(_AnnotationBaseModel):
-    type: Literal["Option"] = Field(..., alias="Type")
+    type: Literal["Basic"] = Field(..., alias="Type")
 
     @override
     def _get_type(self) -> AnnotationTypes:
@@ -133,6 +154,13 @@ class _PluginModel(_AnnotationBaseModel):
 
         return [*self.options, "--plugin", ",".join([name, *parameters])]
 
+    @override
+    def _get_path(self, *, group: str, field: str, source: str | None) -> list[str]:
+        if source is not None:
+            raise AnnotationError(f"source must not be specified for {group}")
+
+        return ["consequence", field]
+
 
 class _CustomModel(_AnnotationBaseModel):
     type: Literal["BED", "VCF"] = Field(..., alias="Type")
@@ -162,6 +190,13 @@ class _CustomModel(_AnnotationBaseModel):
 
         options.append(",".join(params))
         return options
+
+    @override
+    def _get_path(self, *, group: str, field: str, source: str | None) -> list[str]:
+        if source is not None:
+            raise AnnotationError(f"source must not be specified for {group}")
+
+        return ["custom", group, field]
 
 
 class _BuiltinModel(_AnnotationBaseModel):
@@ -203,7 +238,7 @@ class _Root(RootModel[_AnnotationsDict]):
 
 @dataclass
 class AnnotationField:
-    input_key: str
+    input_path: list[str]
     output_key: str
     type: FieldType
     help: Optional[str]

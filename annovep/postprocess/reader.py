@@ -3,16 +3,29 @@ from __future__ import annotations
 import logging
 import pprint
 import re
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, ValidationError
-from typing_extensions import Annotated, Literal, TypedDict
+from typing_extensions import Annotated, TypeAlias, TypedDict
 
 from annovep.utils import open_rb
 
+JSON: TypeAlias = Dict[
+    str, Union[str, int, float, List["JSON"], List[str], "JSON", None]
+]
 
-class VEPRecord(TypedDict):
+
+@dataclass
+class ParsedRecord:
+    vcf: VCFRecord
+    vep: VEPRecord
+
+
+@dataclass
+class VCFRecord:
+    Input: str
     Chr: str
     Pos: int
     ID: List[str]
@@ -22,48 +35,9 @@ class VEPRecord(TypedDict):
     Filters: List[str]
     Info: List[str]
     Samples: List[Dict[str, str]]
-    VEP: VEPData
 
 
-# Combined transcript / intergenic consequence
-class Consequence(BaseModel):
-    amino_acids: Optional[str] = None
-    cdna_end: Optional[int] = None
-    cdna_start: Optional[int] = None
-    cds_end: Optional[int] = None
-    cds_start: Optional[int] = None
-    codons: Optional[str] = None
-    consequence_terms: List[str] = Field(default_factory=list)
-    gene_id: Optional[str] = None
-    impact: Optional[str] = None
-    protein_end: Optional[int] = None
-    protein_start: Optional[int] = None
-    strand: Optional[Literal[1, -1]] = None
-    transcript_id: Optional[str] = None
-    variant_allele: Optional[str] = None
-    canonical: Optional[int] = None
-
-    # Custom fields
-    n_most_significant: int = Field(default=0, alias="::annovep::1")
-    most_significant: Tuple[str, ...] = Field(default=(), alias="::annovep::2")
-    most_significant_canonical: Optional[str] = Field(
-        default=None, alias="::annovep::3"
-    )
-    least_significant: Optional[str] = Field(default=None, alias="::annovep::4")
-
-    cdna_position: Optional[str] = Field(default=None, alias="::annovep::5")
-    cds_position: Optional[str] = Field(default=None, alias="::annovep::6")
-    protein_position: Optional[str] = Field(default=None, alias="::annovep::7")
-
-
-class Custom(BaseModel):
-    # Some custom annotations use names that are interpreted as int (ClinVar)
-    name: Annotated[str, BeforeValidator(lambda value: str(value))]
-    allele: Optional[str] = None
-    fields: Dict[str, Union[str, int, float]] = Field(default_factory=dict)
-
-
-class VEPData(BaseModel):
+class VEPRecord(BaseModel):
     start: int
     strand: int
     # "most_severe_consequence": "?",
@@ -76,11 +50,23 @@ class VEPData(BaseModel):
 
     transcript_consequences: List[Consequence] = Field(default_factory=list)
     intergenic_consequences: List[Consequence] = Field(default_factory=list)
-    custom_annotations: Dict[str, List[Custom]] = Field(default_factory=dict)
+    custom_annotations: Dict[str, List[CustomAnnotation]] = Field(default_factory=dict)
+
+
+Consequence: TypeAlias = Dict[str, Union[str, None, List[str], int, float]]
+
+
+class CustomAnnotation(BaseModel):
+    # Some custom annotations use names that are interpreted as int (ClinVar)
+    name: Annotated[str, BeforeValidator(lambda value: str(value))]
+    allele: Optional[str] = None
+    fields: Dict[str, Union[str, int, float, List[str], None]] = Field(
+        default_factory=dict
+    )
 
 
 class MetaData(TypedDict):
-    samples: list[str]
+    samples: List[str]
 
 
 class VEPReader:
@@ -96,12 +82,11 @@ class VEPReader:
         metadata: MetaData = {"samples": []}
         for line in self._handle:
             record = self._read_record(line)
-            record_id = ";".join(record["ID"])
 
-            if record_id == "AnnoVEP:Samples":
-                metadata["samples"] = record["Info"]
-            elif record_id.startswith("AnnoVEP:"):
-                self._log.warning("unexpected metadata %r", record_id)
+            if "AnnoVEP:Samples" in record.vcf.ID:
+                metadata["samples"] = record.vcf.Info
+            elif any(key.startswith("AnnoVEP:") for key in record.vcf.ID):
+                self._log.warning("unexpected metadata %r", record.vcf.ID)
             else:
                 self._first_record = record
                 break
@@ -112,23 +97,33 @@ class VEPReader:
         self,
         line: bytes,
         nan_re: re.Pattern[bytes] = re.compile(rb":(-)?NaN\b", flags=re.I),
-    ) -> VEPRecord:
+    ) -> ParsedRecord:
         # Workaround for non-standard JSON output observed in some records, where
         # an expected string value was -nan. Python accepts "NaN", but null seems
         # more reasonable for downstream compatibility
         line = nan_re.sub(b":null", line)
         try:
-            data = VEPData.model_validate_json(line, strict=True)
+            vep_record = VEPRecord.model_validate_json(line, strict=True)
         except ValidationError as error:
             self._log.error("invalid record(s):\n%s", pprint.pformat(error.errors()))
             raise SystemExit(1)
 
-        vcf_record = data.input
-        fields = vcf_record.rstrip("\r\n").split("\t")
+        assert isinstance(vep_record.input, str)
+        vcf_record = self._parse_vcf_record(vep_record.input)
+        vep_record.input = vcf_record.Input
+
+        return ParsedRecord(
+            vcf=vcf_record,
+            vep=vep_record,
+        )
+
+    def _parse_vcf_record(self, line: str) -> VCFRecord:
+        fields = line.rstrip("\r\n").split("\t")
         chr, pos, id, ref, alt, qual, filters, info, *fmt_and_samples = fields
         chr = decode_contig_name(chr)
 
-        data.input = "\t".join((chr, pos, id, ref, alt, qual, filters, info))
+        # VCF record excluding any (identifying) sample information
+        line = "\t".join((chr, pos, id, ref, alt, qual, filters, info))
 
         samples: list[dict[str, str]] = []
         if fmt_and_samples:
@@ -136,38 +131,38 @@ class VEPReader:
             for sample in fmt_and_samples[1:]:
                 samples.append(dict(zip(fmt_keys, sample.split(":"))))
 
-        return {
-            "Chr": chr,
-            "Pos": int(pos),
-            "ID": [] if id == "." else id.split(";"),
-            "Ref": ref,
+        return VCFRecord(
+            Input=line,
+            Chr=chr,
+            Pos=int(pos),
+            ID=[] if id == "." else id.split(";"),
+            Ref=ref,
             # . is treated as a actual value, rather than an empty list. This is done so
             # that (limited) information can be retrieved for non-specific variants.
-            "Alts": alt.split(","),
-            "Quality": None if qual == "." else float(qual),
-            "Filters": [] if filters == "." else filters.split(";"),
-            "Info": [] if info == "." else info.split(";"),
-            "Samples": samples,
-            "VEP": data,
-        }
+            Alts=alt.split(","),
+            Quality=None if qual == "." else float(qual),
+            Filters=[] if filters == "." else filters.split(";"),
+            Info=[] if info == "." else info.split(";"),
+            Samples=samples,
+        )
 
-    def __iter__(self) -> Iterator[VEPRecord]:
+    def __iter__(self) -> Iterator[ParsedRecord]:
         chrom = None
         count = 0
 
         if self._first_record is not None:
             yield self._first_record
-            chrom = self._first_record["Chr"]
+            chrom = self._first_record.vcf.Chr
             count = 1
 
             self._first_record = None
 
         for line in self._handle:
             record = self._read_record(line)
-            if record["Chr"] != chrom:
+            if record.vcf.Chr != chrom:
                 if chrom is not None:
                     self._log.info("processed %i records on %r", count, chrom)
-                chrom = record["Chr"]
+                chrom = record.vcf.Chr
                 count = 1
             else:
                 count += 1
