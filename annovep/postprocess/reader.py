@@ -5,13 +5,15 @@ import logging
 import pprint
 import re
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Union
 
 from pydantic import BaseModel, BeforeValidator, Field, ValidationError
 from typing_extensions import Annotated, TypeAlias, TypedDict
 
 from annovep.utils import open_rb
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 JSON: TypeAlias = Dict[
     str, Union[str, int, float, List["JSON"], List[str], "JSON", None]
@@ -72,7 +74,7 @@ class MetaData(TypedDict):
 
 
 class VEPReader:
-    def __init__(self, filename: Path):
+    def __init__(self, filename: Path) -> None:
         self._first_record = None
 
         self._log = logging.getLogger(__name__)

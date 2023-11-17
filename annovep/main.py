@@ -72,13 +72,22 @@ def filter_annotations(
 
 
 class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("width", 79)
+    def __init__(
+        self,
+        prog: str,
+        indent_increment: int = 2,
+        max_help_position: int = 24,
+        width: int | None = 79,
+    ) -> None:
+        super().__init__(
+            prog=prog,
+            indent_increment=indent_increment,
+            max_help_position=max_help_position,
+            width=width,
+        )
 
-        super().__init__(*args, **kwargs)
 
-
-def parse_args(argv: list[str]):
+def parse_args(argv: list[str]) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         formatter_class=HelpFormatter,
         prog="annovep pipeline",

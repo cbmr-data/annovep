@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import argparse
 import logging
 from typing import TYPE_CHECKING, Dict
 
@@ -9,6 +8,8 @@ from annovep.postprocess.annotations import Annotator
 from annovep.postprocess.reader import VEPReader
 
 if TYPE_CHECKING:
+    import argparse
+
     from annovep.annotation import Annotation
 
 

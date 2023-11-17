@@ -7,11 +7,16 @@ import logging
 import sqlite3
 import sys
 import zlib
-from typing import Any
+from typing import TYPE_CHECKING, Sequence, cast
+
+from typing_extensions import override
 
 from annovep._version import VERSION
 from annovep.postprocess import consequences
-from annovep.postprocess.annotations import Annotator
+
+if TYPE_CHECKING:
+    from annovep.postprocess.annotations import Annotator
+    from annovep.postprocess.reader import JSON
 
 # Columns that contain consequence terms (see `consequences.ranks()`)
 CONSEQUENCE_COLUMNS = (
@@ -49,14 +54,14 @@ class Output:
         value = datetime.datetime.fromtimestamp(timestamp)
         self._date_vep = value.replace(microsecond=0).isoformat()
 
-    def finalize(self):
+    def finalize(self) -> None:
         if self._handle is not sys.stdout:
             self._handle.close()
 
-    def process_json(self, data) -> None:
+    def process_json(self, data: JSON) -> None:
         pass
 
-    def process_row(self, data) -> None:
+    def process_row(self, data: JSON) -> None:
         raise NotImplementedError()
 
     def _print(self, line: str = "", *args: object) -> None:
@@ -67,10 +72,11 @@ class Output:
 
 
 class JSONOutput(Output):
-    def __init__(self, annotations: Annotator, out_prefix: str | None):
+    def __init__(self, annotations: Annotator, out_prefix: str | None) -> None:
         super().__init__(annotations, out_prefix, ".json")
 
-    def process_row(self, data) -> None:
+    @override
+    def process_row(self, data: JSON) -> None:
         json.dump(
             {field.output_key: data[field.output_key] for field in self.fields},
             self._handle,
@@ -79,7 +85,7 @@ class JSONOutput(Output):
 
 
 class TSVOutput(Output):
-    def __init__(self, annotations: Annotator, out_prefix: str | None):
+    def __init__(self, annotations: Annotator, out_prefix: str | None) -> None:
         super().__init__(annotations, out_prefix, ".tsv")
 
         self._print("#{}", "\t".join([field.output_key for field in self.fields]))
@@ -91,7 +97,8 @@ class TSVOutput(Output):
                 for field in self.fields:
                     print(field.output_key, field.help, sep="\t", file=handle)
 
-    def process_row(self, data):
+    @override
+    def process_row(self, data: JSON) -> None:
         row = [self._to_string(data[field.output_key]) for field in self.fields]
 
         self._print("\t".join(row))
@@ -117,11 +124,11 @@ class SQLOutput(Output):
         super().__init__(annotations, out_prefix, ".sql")
 
         self._consequence_ranks = self._build_consequence_ranks()
-        self._contigs = {
+        self._contigs: dict[str, dict[str, int]] = {
             "hg19": collections.defaultdict(int),
             "hg38": collections.defaultdict(int),
         }
-        self._genes = {}
+        self._genes: dict[str, dict[str, int | float | str | list[str]]] = {}
         self._n_overlap = 0
         self._n_row = 0
         self._n_json = 0
@@ -177,7 +184,7 @@ class SQLOutput(Output):
         self._print()
         self._print("BEGIN;")
 
-    def finalize(self):
+    def finalize(self) -> None:
         self._print("END;")
         self._print()
         self._print("BEGIN;")
@@ -211,12 +218,10 @@ class SQLOutput(Output):
 
         self._handle.close()
 
-    def process_json(self, data: dict[str, Any]) -> None:
+    def process_json(self, data: JSON) -> None:
         data = dict(data)
-
-        # Remove any sample specific information and leave only summary information
-        vcf_fields = data.pop("input").split("\t", 8)[:8]
-        data["input"] = "\t".join(vcf_fields).rstrip("\r\n")
+        assert isinstance(data["input"], str)
+        chrom, pos, _ = data["input"].split("\t", 2)
 
         # Keys are sorted to improve compression ratio
         blob = zlib.compress(json.dumps(data, sort_keys=True).encode("utf-8")).hex()
@@ -224,24 +229,32 @@ class SQLOutput(Output):
         self._print(
             "INSERT INTO [JSON] VALUES ({}, {}, {}, {});",
             self._n_json,
-            self._to_string(vcf_fields[0]),
-            self._to_string(int(vcf_fields[1])),
+            self._to_string(chrom),
+            int(pos),
             "X'{}'".format(blob),
         )
 
         self._n_json += 1
 
-    def process_row(self, data) -> None:
+    @override
+    def process_row(self, data: JSON) -> None:
         self._n_row += 1
-        self._contigs["hg38"][data["Chr"]] += 1
-        self._contigs["hg19"][data["Hg19_chr"]] += 1
 
         data = dict(data)
+        assert isinstance(data["Chr"], str)
+        assert isinstance(data["Pos"], int)
+        self._contigs["hg38"][data["Chr"]] += 1
+        assert isinstance(data["Hg19_chr"], str)
+        self._contigs["hg19"][data["Hg19_chr"]] += 1
+
+        assert data["Func_most_significant"] is None or isinstance(data["Func_most_significant"], str)
+        assert data["Func_most_significant_canonical"] is None or isinstance(data["Func_most_significant_canonical"], str)
 
         # VEP consequence terms
         for key in CONSEQUENCE_COLUMNS:
             value = data.get(key)
             if value is not None:
+                assert isinstance(value, str)
                 value = self._consequence_ranks[value]
 
             data[key] = value
@@ -251,30 +264,37 @@ class SQLOutput(Output):
 
         self._print("INSERT INTO [Annotations] VALUES ({});", ", ".join(values))
 
-        for gene in data.get("Genes_overlapping", ()):
-            gene_info = self._genes.get(gene)
-            if gene_info is None:
-                self._genes[gene] = {
-                    "Chr": data["Chr"],
-                    "MinPos": data["Pos"],
-                    "MaxPos": data["Pos"],
-                    "Variants": 1,
-                    "Most_significant": data["Func_most_significant"],
-                    "Most_significant_canonical": data[
-                        "Func_most_significant_canonical"
-                    ],
-                }
-            elif gene_info["Chr"] != data["Chr"]:
-                raise ValueError(f"gene {gene!r} found on multiple contigs")
-            else:
-                gene_info["MinPos"] = min(data["Pos"], gene_info["MinPos"])
-                gene_info["MaxPos"] = max(data["Pos"], gene_info["MaxPos"])
-                gene_info["Variants"] += 1
+        overlapping_genes = data.get("Genes_overlapping"):
+        if overlapping_genes is not None:
+            assert isinstance(overlapping_genes, list)
 
-                for key in ("Most_significant", "Most_significant_canonical"):
-                    gene_info[key] = self._worst_consequence(
-                        gene_info[key], data[f"Func_{key.lower()}"]
-                    )
+            for gene in overlapping_genes:
+                assert isinstance(gene, str)
+
+                gene_info = self._genes.get(gene)
+                if gene_info is None:
+                    self._genes[gene] = {
+                        "Chr": data["Chr"],
+                        "MinPos": data["Pos"],
+                        "MaxPos": data["Pos"],
+                        "Variants": 1,
+                        "Most_significant": data["Func_most_significant"],
+                        "Most_significant_canonical": data[
+                            "Func_most_significant_canonical"
+                        ],
+                    }
+                elif gene_info["Chr"] != data["Chr"]:
+                    raise ValueError(f"gene {gene!r} found on multiple contigs")
+                else:
+                    gene_info["MinPos"] = min(data["Pos"], gene_info["MinPos"])
+                    gene_info["MaxPos"] = max(data["Pos"], gene_info["MaxPos"])
+                    assert isinstance(gene_info["Variants"], int)
+                    gene_info["Variants"] += 1
+
+                    for key in ("Most_significant", "Most_significant_canonical"):
+                        gene_info[key] = self._worst_consequence(
+                            gene_info[key], data[f"Func_{key.lower()}"]
+                        )
 
     @staticmethod
     def _worst_consequence(
@@ -288,7 +308,7 @@ class SQLOutput(Output):
 
         return max(consequence_a, consequence_b)
 
-    def _print_descriptions(self):
+    def _print_descriptions(self) -> None:
         self._print("DROP TABLE IF EXISTS [Columns];")
         self._print(
             """
@@ -328,7 +348,7 @@ class SQLOutput(Output):
                 field.digits,
             )
 
-    def _print_consequence_terms(self):
+    def _print_consequence_terms(self) -> None:
         self._print("DROP TABLE IF EXISTS [Consequences];")
         self._print(
             """
@@ -346,7 +366,7 @@ class SQLOutput(Output):
                 self._to_string(name),
             )
 
-    def _print_gene_tables(self):
+    def _print_gene_tables(self) -> None:
         self._print("DROP TABLE IF EXISTS [Genes];")
         self._print(
             """
@@ -363,7 +383,7 @@ class SQLOutput(Output):
             """
         )
 
-    def _print_json_table(self):
+    def _print_json_table(self) -> None:
         self._print("DROP TABLE IF EXISTS [JSON];")
         self._print(
             """
@@ -377,7 +397,7 @@ class SQLOutput(Output):
         )
         self._print()
 
-    def _print_contig_names(self):
+    def _print_contig_names(self) -> None:
         self._print("DROP TABLE IF EXISTS [Contigs];")
         self._print(
             """
@@ -390,7 +410,7 @@ class SQLOutput(Output):
             """
         )
 
-        contigs = []
+        contigs: list[tuple[str, str, int]] = []
         overlap = self._contigs["hg19"].keys() & self._contigs["hg38"].keys()
 
         # Collect hg38 contigs. These should be in the proper order
@@ -412,7 +432,7 @@ class SQLOutput(Output):
                 self._to_string(variants),
             )
 
-    def _print_meta_data(self):
+    def _print_meta_data(self) -> None:
         self._print("DROP TABLE IF EXISTS [Meta];")
         self._print(
             """
@@ -460,7 +480,7 @@ class SQLOutput(Output):
             if not value:
                 return "NULL"
 
-            value = ";".join(map(str, value))
+            value = ";".join(map(str, cast(Sequence[object], value)))
         elif value is None:
             return "NULL"
         else:
@@ -470,13 +490,13 @@ class SQLOutput(Output):
 
 
 class SQLite3Output(SQLOutput):
-    def __init__(self, annotations, out_prefix):
+    def __init__(self, annotations: Annotator, out_prefix: str) -> None:
         self._conn = sqlite3.connect(f"{out_prefix}.sqlite3")
         self._curs = self._conn.cursor()
 
         super().__init__(annotations, None)
 
-    def finalize(self):
+    def finalize(self) -> None:
         super().finalize()
 
         self._conn.commit()

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-import argparse
 import logging
 import re
+from typing import TYPE_CHECKING
 
-from annovep.annotation import Annotation
 from annovep.utils import open_ro
+
+if TYPE_CHECKING:
+    import argparse
+
+    from annovep.annotation import Annotation
 
 _RE_CONTIG_ID = re.compile("^(##contig=<.*ID=)([^,]+)(.*>)$", re.I)
 
@@ -29,7 +33,7 @@ def fix_contig_name(line: str) -> tuple[str, str | None, str | None]:
     return line, None, None
 
 
-def is_valid(sequence: str, whitelist: str = "ACGTNacgtn.,*"):
+def is_valid(sequence: str, whitelist: str = "ACGTNacgtn.,*") -> bool:
     # Don't bother supporting old/weird VCFs
     return not set(sequence).difference(whitelist)
 

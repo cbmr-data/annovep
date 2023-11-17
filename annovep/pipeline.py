@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-import argparse
 import logging
 import os
 import subprocess
 import sys
-from typing import IO, AnyStr
+from typing import IO, TYPE_CHECKING, AnyStr
 
-from annovep.annotation import Annotation
 from annovep.utils import cmd_to_str, join_procs, update_required
+
+if TYPE_CHECKING:
+    import argparse
+
+    from annovep.annotation import Annotation
 
 
 def exec(

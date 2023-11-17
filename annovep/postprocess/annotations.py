@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import collections
 import functools
-import logging
 import re
-from typing import Dict, Generator, Union
+from typing import TYPE_CHECKING, Generator
 
 import liftover
-from typing_extensions import TypeAlias, TypedDict
+from typing_extensions import TypedDict
 
 from annovep.annotation import Annotation, AnnotationField
 from annovep.postprocess import consequences
@@ -21,6 +20,9 @@ from annovep.postprocess.reader import (
     VEPRecord,
 )
 
+if TYPE_CHECKING:
+    import logging
+
 _RE_ALLELE = re.compile(r"[/|]")
 
 
@@ -29,9 +31,6 @@ class VEPAllele(TypedDict):
     ref: str
     alt: str
     alleles: str
-
-
-OutputDict: TypeAlias = Dict[str, Union[int, str, float, None]]
 
 
 class Annotator:
