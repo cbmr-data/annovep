@@ -9,7 +9,7 @@ import sys
 import zlib
 from typing import TYPE_CHECKING, List, Sequence, cast
 
-from typing_extensions import override
+from typing_extensions import Literal, TypeAlias, TypedDict, override
 
 from annovep._version import VERSION
 from annovep.postprocess import consequences
@@ -20,12 +20,27 @@ if TYPE_CHECKING:
     from annovep.postprocess.annotations import Annotator
     from annovep.postprocess.reader import JSON
 
+ConsequenceColumns: TypeAlias = Literal[
+    "Func_most_significant",
+    "Func_least_significant",
+    "Func_most_significant_canonical",
+]
+
 # Columns that contain consequence terms (see `consequences.ranks()`)
 CONSEQUENCE_COLUMNS = (
     "Func_most_significant",
     "Func_least_significant",
     "Func_most_significant_canonical",
 )
+
+
+class GeneInfo(TypedDict):
+    Chr: str
+    MinPos: int
+    MaxPos: int
+    Variants: int
+    Most_significant: int | None
+    Most_significant_canonical: int | None
 
 
 class Output:
@@ -130,7 +145,7 @@ class SQLOutput(Output):
             "hg19": collections.defaultdict(int),
             "hg38": collections.defaultdict(int),
         }
-        self._genes: dict[str, dict[str, int | float | str | list[str]]] = {}
+        self._genes: dict[str, GeneInfo] = {}
         self._n_overlap = 0
         self._n_row = 0
         self._n_json = 0
@@ -249,21 +264,11 @@ class SQLOutput(Output):
         assert isinstance(data["Hg19_chr"], str)
         self._contigs["hg19"][data["Hg19_chr"]] += 1
 
-        assert data["Func_most_significant"] is None or isinstance(
-            data["Func_most_significant"], str
-        )
-        assert data["Func_most_significant_canonical"] is None or isinstance(
-            data["Func_most_significant_canonical"], str
-        )
-
-        # VEP consequence terms
-        for key in CONSEQUENCE_COLUMNS:
-            value = data.get(key)
-            if value is not None:
-                assert isinstance(value, str)
-                value = self._consequence_ranks[value]
-
-            data[key] = value
+        # Convert VEP consequence terms to ranks/numeric keys
+        consequences: dict[ConsequenceColumns, int | None] = {
+            key: self._consequence_ranks[data[key]] for key in CONSEQUENCE_COLUMNS
+        }
+        data.update(consequences.items())
 
         values = [str(self._n_row)]
         values.extend(self._to_string(data[field.output_key]) for field in self.fields)
@@ -279,16 +284,16 @@ class SQLOutput(Output):
 
                 gene_info = self._genes.get(gene)
                 if gene_info is None:
-                    self._genes[gene] = {
-                        "Chr": data["Chr"],
-                        "MinPos": data["Pos"],
-                        "MaxPos": data["Pos"],
-                        "Variants": 1,
-                        "Most_significant": data["Func_most_significant"],
-                        "Most_significant_canonical": data[
+                    self._genes[gene] = GeneInfo(
+                        Chr=data["Chr"],
+                        MinPos=data["Pos"],
+                        MaxPos=data["Pos"],
+                        Variants=1,
+                        Most_significant=consequences["Func_most_significant"],
+                        Most_significant_canonical=consequences[
                             "Func_most_significant_canonical"
                         ],
-                    }
+                    )
                 elif gene_info["Chr"] != data["Chr"]:
                     raise ValueError(f"gene {gene!r} found on multiple contigs")
                 else:
@@ -297,10 +302,15 @@ class SQLOutput(Output):
                     assert isinstance(gene_info["Variants"], int)
                     gene_info["Variants"] += 1
 
-                    for key in ("Most_significant", "Most_significant_canonical"):
-                        gene_info[key] = self._worst_consequence(
-                            gene_info[key], data[f"Func_{key.lower()}"]
-                        )
+                    gene_info["Most_significant"] = self._worst_consequence(
+                        gene_info["Most_significant"],
+                        consequences["Func_most_significant"],
+                    )
+
+                    gene_info["Most_significant_canonical"] = self._worst_consequence(
+                        gene_info["Most_significant_canonical"],
+                        consequences["Func_most_significant_canonical"],
+                    )
 
     @staticmethod
     def _worst_consequence(
@@ -470,12 +480,13 @@ class SQLOutput(Output):
             )
 
     @staticmethod
-    def _build_consequence_ranks() -> dict[str, int]:
+    def _build_consequence_ranks() -> dict[object, int | None]:
         """Returns consequences with a human friendly ranking: bad > insignificant."""
-        human_friendly_ranks: dict[str, int] = collections.OrderedDict()
+        human_friendly_ranks: dict[object, int | None] = collections.OrderedDict()
         for rank, name in enumerate(reversed(list(consequences.ranks()))):
             human_friendly_ranks[name] = rank
 
+        human_friendly_ranks[None] = None
         return human_friendly_ranks
 
     @staticmethod
