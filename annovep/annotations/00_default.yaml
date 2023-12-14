@@ -143,6 +143,8 @@ Consequences:
     # https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html#opt_polyphen
     - "--polyphen"
     - "b"
+    # https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html#opt_numbers
+    - "--numbers"
   Fields:
     - Input: "gene_id"
       Output: "Func_gene_id"
@@ -164,6 +166,9 @@ Consequences:
       Output: "Func_most_significant"
       Help: "The most significant consequence"
       FieldType: int
+    - Input: "exon"
+      Output: "Func_most_significant_exon"
+      Help: "The exon of the transcript transcript with the most significant consequence"
     - Input: ":least_significant:"
       Output: "Func_least_significant"
       Help: "The last significant consequence for the same gene as the most significant consequence"
@@ -214,6 +219,9 @@ CanonicalConsequences:
       Output: "Func_most_significant_canonical"
       Help: "The most significant consequence for canonical transcripts only"
       FieldType: int
+    - Input: "exon"
+      Output: "Func_most_significant_exon_canonical"
+      Help: "The exon of the canonical transcript with the most significant consequence"
 
 # https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html#opt_hgvs
 HGVS:
