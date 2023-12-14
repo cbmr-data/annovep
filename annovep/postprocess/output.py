@@ -7,7 +7,7 @@ import logging
 import sqlite3
 import sys
 import zlib
-from typing import TYPE_CHECKING, List, Sequence, cast
+from typing import TYPE_CHECKING, ClassVar, List, Sequence, cast
 
 from typing_extensions import Literal, TypeAlias, TypedDict, override
 
@@ -33,6 +33,8 @@ CONSEQUENCE_COLUMNS = (
     "Func_most_significant_canonical",
 )
 
+UTC = datetime.timezone.utc
+
 
 class GeneInfo(TypedDict):
     Chr: str
@@ -54,21 +56,23 @@ class Output:
         self.fields = annotations.fields
         self._handle = sys.stdout
         if out_prefix is not None:
-            self._handle = open(f"{out_prefix}{extension}", "wt")
+            self._handle = open(f"{out_prefix}{extension}", "w")
 
         self._date_vcf = "Unspecified"
         self._date_vep = "Unspecified"
-        self._date_post = datetime.datetime.now().replace(microsecond=0).isoformat()
+        self._date_post = (
+            datetime.datetime.now(tz=UTC).replace(microsecond=0).isoformat()
+        )
 
     def set_vcf_timestamp(self, timestamp: float | None) -> None:
         if timestamp is not None:
-            value = datetime.datetime.fromtimestamp(timestamp)
+            value = datetime.datetime.fromtimestamp(timestamp, tz=UTC)
             self._date_vcf = value.replace(microsecond=0).isoformat()
         else:
             self._date_vcf = "Unspecified"
 
     def set_vep_timestamp(self, timestamp: float) -> None:
-        value = datetime.datetime.fromtimestamp(timestamp)
+        value = datetime.datetime.fromtimestamp(timestamp, tz=UTC)
         self._date_vep = value.replace(microsecond=0).isoformat()
 
     def finalize(self) -> None:
@@ -108,7 +112,7 @@ class TSVOutput(Output):
         self._print("#{}", "\t".join([field.output_key for field in self.fields]))
 
         if out_prefix is not None:
-            with open(f"{out_prefix}.tsv.columns", "wt") as handle:
+            with open(f"{out_prefix}.tsv.columns", "w") as handle:
                 print("Name\tDescription", file=handle)
 
                 for field in self.fields:
@@ -132,7 +136,7 @@ class TSVOutput(Output):
 
 class SQLOutput(Output):
     # Columns that are renamed for the DB/shiny interface
-    COLUMN_MAPPING = {
+    COLUMN_MAPPING: ClassVar[dict[str, str]] = {
         "Chr": "Hg38_chr",
         "Pos": "Hg38_pos",
     }
