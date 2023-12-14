@@ -9,7 +9,7 @@ import subprocess
 import sys
 import time
 from os import fspath
-from typing import IO, TYPE_CHECKING, AnyStr, Iterable
+from typing import IO, TYPE_CHECKING, AnyStr, Iterable, cast
 
 if TYPE_CHECKING:
     import logging
@@ -46,14 +46,14 @@ def update_required(output: str | Path, inputs: Iterable[str | Path]) -> bool:
 def open_rb(filename: str | Path) -> IO[bytes]:
     """Opens a file for reading, transparently handling
     GZip and BZip2 compressed files. Returns a file handle."""
-    handle: IO[bytes] = open(fspath(filename), "rb")  # noqa: SIM115
+    handle: IO[bytes] = open(fspath(filename), "rb")
 
     try:
         header = handle.peek(2)
 
         if header.startswith(b"\x1f\x8b"):
             # ISA-l or builting GzipFile (see above)
-            handle = GzipFile(mode="rb", fileobj=handle)  # type: ignore
+            handle = cast(IO[bytes], GzipFile(mode="rb", fileobj=handle))
         elif header.startswith(b"BZ"):
             handle = bz2.BZ2File(handle, "rb")
     except:

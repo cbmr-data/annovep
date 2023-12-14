@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-# -*- coding: utf8 -*-
+# ruff: noqa: FA100
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import List
 
 
-def eprint(*args, **kwargs):
-    kwargs.setdefault("file", sys.stderr)
-    print(*args, **kwargs)
+def eprint(*args: object) -> None:
+    print(*args, file=sys.stderr)
 
 
-def run_container(runner, image, root, argv):
+def run_container(runner: str, image: str, root: Path, argv: List[str]) -> int:
     command = [runner, "run", "-i"]
     if sys.stdin.isatty():
         command.append("-t")
@@ -40,9 +40,9 @@ def run_container(runner, image, root, argv):
     )
 
 
-def main(argv):
+def main(argv: List[str]) -> int:
     image = os.environ.get("ANNOVEP_IMAGE", "annovep:v2")
-    root = os.environ.get("ANNOVEP_CACHE", Path("~/annovep/").expanduser())
+    root = Path(os.environ.get("ANNOVEP_CACHE", "~/annovep/")).expanduser()
     runner = os.environ.get("ANNOVEP_RUNNER", "").lower()
     if runner not in ("", "docker", "podman"):
         eprint("ANNOVEP_RUNNER must be 'docker', 'podman', or not set")
