@@ -128,6 +128,8 @@ class Annotator:
                 if field.split_by is not None:
                     assert source is None or isinstance(source, str)
                     source = [] if source is None else source.split(field.split_by)
+                    if field.sort:
+                        source.sort()
 
                 if source is not None:
                     self._counter[field.output_key] += 1

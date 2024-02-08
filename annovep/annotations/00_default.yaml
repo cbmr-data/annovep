@@ -294,6 +294,7 @@ LoF:
       Output: "Func_lof_info"
       Help: "Info used for LoF annotation"
       SplitBy: ","
+      Sort: True
 
 # Runtime ~= 1.0x
 ExACpLI:

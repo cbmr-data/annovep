@@ -55,6 +55,8 @@ class _AnnotationFieldModel(BaseModel):
     help: Optional[str] = Field(alias="Help", default=None)
     # Normalize lists of items using this separator
     split_by: Optional[str] = Field(alias="SplitBy", default=None)
+    # If split_by is set, also sort the resulting list
+    sort: bool = Field(alias="Sort", default=False)
     # Enable thousands separator
     thousands_sep: bool = Field(alias="ThousandsSep", default=False)
     # Floating point precision (int/float only)
@@ -116,6 +118,7 @@ class _AnnotationBaseModel(BaseModel):
                 derived_from=[],
                 help=it.help,
                 split_by=it.split_by,
+                sort=it.sort,
                 thousands_sep=it.thousands_sep,
                 digits=self.digits if it.digits is None else it.digits,
             )
@@ -283,6 +286,8 @@ class AnnotationField:
     derived_from: list[str]
     # Normalize lists of items using this separator
     split_by: Optional[str] = None
+    # If split_by is set, also sort the resulting list
+    sort: bool = False
     # Enable thousands separator
     thousands_sep: bool = False
     # Floating point precision (int/float only)
