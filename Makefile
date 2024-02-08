@@ -1,4 +1,4 @@
-TAG := v2
+TAG := v3
 MANAGER := podman
 
 .PHONY: all clean
