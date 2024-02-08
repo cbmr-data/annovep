@@ -15,6 +15,7 @@ class Args(BaseModel):
     out_prefix: Path
     transcript_strategy: Literal["canonical", "most-significant"]
     annotations: List[Path]
+    annotations_list: bool
     enable: Dict[str, bool]
     do: Literal["run", "pre-process", "post-process"]
     vcf_timestamp: Optional[float]
@@ -118,12 +119,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     group.add_argument(
+        "--annotations-list",
+        action="store_true",
+        help="Quit after listing available annotation sources",
+    )
+
+    group.add_argument(
         "--enable",
         type=str.lower,
-        metavar="ANNOTATION",
+        metavar="NAME",
         default={},
         action=EnableAction,
-        help="Enable annotations disabled by default",
+        help="Enable annotations disabled by default; run annovep with "
+        "--annotations-list to view available annotation sources",
     )
 
     group.add_argument(
@@ -131,9 +139,10 @@ def build_parser() -> argparse.ArgumentParser:
         dest="enable",
         default={},
         type=str.lower,
-        metavar="ANNOTATION",
+        metavar="NAME",
         action=DisableAction,
-        help="Disable annotations enabled by default",
+        help="Disable annotations enabled by default; run annovep with "
+        "--annotations-list to view available annotation sources",
     )
 
     group.add_argument(

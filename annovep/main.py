@@ -68,6 +68,7 @@ def main(argv: list[str]) -> int:
     }
 
     log = logging.getLogger("annovep")
+    log.info("Loading annotations:")
     try:
         annotations = load_annotations(args.annotations, variables)
     except AnnotationError:
@@ -76,6 +77,8 @@ def main(argv: list[str]) -> int:
 
     if not filter_annotations(log, annotations, args.enable):
         return 1
+    elif args.annotations_list:
+        return 0
 
     if args.do == "run":
         return pipeline_main(args, annotations)
