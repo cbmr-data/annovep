@@ -6,7 +6,7 @@ import re
 from typing import TYPE_CHECKING, Generator
 
 import liftover
-from typing_extensions import TypedDict
+from typing_extensions import Literal, TypeAlias, TypedDict
 
 from annovep.annotation import Annotation, AnnotationField
 from annovep.postprocess import consequences
@@ -23,6 +23,8 @@ from annovep.postprocess.reader import (
 if TYPE_CHECKING:
     import logging
     from pathlib import Path
+
+    TranscriptStrategy: TypeAlias = Literal["canonical", "most-significant"]
 
 _RE_ALLELE = re.compile(r"[/|]")
 
@@ -44,6 +46,7 @@ class Annotator:
         "_fields_derived",
         "_liftover_cache",
         "_liftover",
+        "_strategy",
         "fields",
         "groups",
     ]
@@ -56,12 +59,14 @@ class Annotator:
     _fields_derived: tuple[AnnotationField, ...]
     _liftover_cache: Path | None
     _liftover: liftover.ChainFile | None
+    _strategy: TranscriptStrategy
     fields: tuple[AnnotationField, ...]
     groups: tuple[Annotation, ...]
 
     def __init__(
         self,
         annotations: list[Annotation],
+        strategy: TranscriptStrategy,
         metadata: MetaData | None = None,
         liftover_cache: Path | None = None,
     ) -> None:
@@ -72,6 +77,7 @@ class Annotator:
         self._builtin_liftover = False
         self._liftover_cache = liftover_cache
         self._liftover = None
+        self._strategy = strategy
 
         if metadata is not None:
             self._apply_metadata(metadata)
@@ -199,17 +205,22 @@ class Annotator:
             if self._builtin_sample_genotypes:
                 sample_genotypes = self._get_sample_genotypes(vcf, allele)
 
+            consequence = canonical_consequence = self._get_allele_consequence(
+                vep=vep,
+                allele=vep_allele["alt"],
+                canonical_only=True,
+            )
+
+            if self._strategy != "canonical":
+                consequence = self._get_allele_consequence(
+                    vep=vep,
+                    allele=vep_allele["alt"],
+                )
+
             yield {
                 "input": vars(vcf),
-                "consequence": self._get_allele_consequence(
-                    vep=vep,
-                    allele=vep_allele["alt"],
-                ),
-                "canonical_consequence": self._get_allele_consequence(
-                    vep=vep,
-                    allele=vep_allele["alt"],
-                    canonical_only=True,
-                ),
+                "consequence": consequence,
+                "canonical_consequence": canonical_consequence,
                 "custom": self._get_custom_annotation(
                     vep=vep,
                     allele=vep_allele["alt"],

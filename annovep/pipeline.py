@@ -127,6 +127,8 @@ def run_post_proc(
         repr(args.in_file.stat().st_mtime),
         "--data-liftover",
         args.data_liftover,
+        "--transcript-strategy",
+        args.transcript_strategy,
     ]
 
     if args.include_json:

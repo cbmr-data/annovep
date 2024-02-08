@@ -29,6 +29,7 @@ def main(args: Args, annotations: list[Annotation]) -> int:
         annotations=annotations,
         metadata=vep_reader.metadata,
         liftover_cache=args.data_liftover,
+        strategy=args.transcript_strategy,
     )
 
     writers: dict[str, output.Output] = {}

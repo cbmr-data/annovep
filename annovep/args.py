@@ -13,6 +13,7 @@ from typing_extensions import Literal
 class Args(BaseModel):
     in_file: Path
     out_prefix: Path
+    transcript_strategy: Literal["canonical", "most-significant"]
     annotations: List[Path]
     enable: Dict[str, bool]
     do: Literal["run", "pre-process", "post-process"]
@@ -84,34 +85,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("out_prefix", type=Path, nargs="?")
 
     parser.add_argument(
-        "--annotations",
-        metavar="FILE",
-        type=Path,
-        default=[],
-        action="append",
-        help="Optional files containing additional annotations",
-    )
-
-    parser.add_argument(
-        "--enable",
-        type=str.lower,
-        metavar="ANNOTATION",
-        default={},
-        action=EnableAction,
-        help="Enable annotations disabled by default",
-    )
-
-    parser.add_argument(
-        "--disable",
-        dest="enable",
-        default={},
-        type=str.lower,
-        metavar="ANNOTATION",
-        action=DisableAction,
-        help="Disable annotations enabled by default",
-    )
-
-    parser.add_argument(
         "--do",
         type=str.lower,
         choices=("run", "pre-process", "post-process"),
@@ -132,6 +105,45 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("~/annovep").expanduser(),
         help="The root location of the AnnoVEP install",
+    )
+
+    group = parser.add_argument_group("Annotations")
+    group.add_argument(
+        "--annotations",
+        metavar="FILE",
+        type=Path,
+        default=[],
+        action="append",
+        help="Optional files containing additional annotations",
+    )
+
+    group.add_argument(
+        "--enable",
+        type=str.lower,
+        metavar="ANNOTATION",
+        default={},
+        action=EnableAction,
+        help="Enable annotations disabled by default",
+    )
+
+    group.add_argument(
+        "--disable",
+        dest="enable",
+        default={},
+        type=str.lower,
+        metavar="ANNOTATION",
+        action=DisableAction,
+        help="Disable annotations enabled by default",
+    )
+
+    group.add_argument(
+        "--transcript-strategy",
+        metavar="STRATEGY",
+        choices=("canonical", "most-significant"),
+        default="most-significant",
+        help="Strategy for selecting what transcript to report results for: Either the "
+        "canonical transcript or the transcript for which the most significant "
+        "consequence was observed",
     )
 
     group = parser.add_argument_group("Data locations")
