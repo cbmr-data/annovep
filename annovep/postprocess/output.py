@@ -265,8 +265,8 @@ class SQLOutput(Output):
         assert isinstance(data["Chr"], str)
         assert isinstance(data["Pos"], int)
         self._contigs["hg38"][data["Chr"]] += 1
-        assert isinstance(data["Hg19_chr"], str)
-        self._contigs["hg19"][data["Hg19_chr"]] += 1
+        if isinstance(data["Hg19_chr"], str):
+            self._contigs["hg19"][data["Hg19_chr"]] += 1
 
         # Convert VEP consequence terms to ranks/numeric keys
         consequences: dict[ConsequenceColumns, int | None] = {
