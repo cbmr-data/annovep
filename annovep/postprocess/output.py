@@ -380,11 +380,12 @@ class SQLOutput(Output):
         )
 
         for name, pk in self._consequence_ranks.items():
-            self._print(
-                "INSERT INTO [Consequences] VALUES ({}, {});",
-                pk,
-                self._to_string(name),
-            )
+            if name is not None and pk is not None:
+                self._print(
+                    "INSERT INTO [Consequences] VALUES ({}, {});",
+                    pk,
+                    self._to_string(name),
+                )
 
     def _print_gene_tables(self) -> None:
         self._print("DROP TABLE IF EXISTS [Genes];")
