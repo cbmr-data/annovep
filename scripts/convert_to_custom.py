@@ -1,22 +1,30 @@
 #!/usr/bin/env python3
-# -*- coding: utf8 -*-
+from __future__ import annotations
+
 import argparse
 import bz2
 import collections
 import fnmatch
+import functools
 import io
 import itertools
 import logging
 import sys
 import zipfile
 from os import fspath
-from pathlib import Path
 from shlex import quote
-from typing import IO, NamedTuple, Optional, Union, cast
+from typing import IO, TYPE_CHECKING, Callable, Iterable, Iterator, NamedTuple, cast
 
 import coloredlogs
 import pysam
 from ruamel.yaml import YAML
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+    from pathlib import Path
+
+    from pysam import VariantRecord
+    from typing_extensions import Self
 
 try:
     # ISA-L is significantly faster than the built-in gzip decompressor
@@ -32,14 +40,14 @@ VCF_ROW_TEMPLATE = "{chrom}\t{pos}\t{id}\t{ref}\t{alt}\t{qual}\t{filter}\t{info}
 class Counter:
     STEP = 10e6
 
-    def __init__(self, log):
+    def __init__(self, log: logging.Logger) -> None:
         self._log = log
-        self._chrom = None
-        self._count = 0
-        self._next_print = Counter.STEP
-        self._skipped = collections.defaultdict(int)
+        self._chrom: str | None = None
+        self._count: int = 0
+        self._next_print = int(Counter.STEP)
+        self._skipped: collections.defaultdict[str, int] = collections.defaultdict(int)
 
-    def __call__(self, chrom, num=1):
+    def __call__(self, chrom: str, num: int = 1) -> None:
         if chrom != self._chrom:
             self.print()
             self._chrom = chrom
@@ -52,36 +60,36 @@ class Counter:
             self._next_print += Counter.STEP
             self.print()
 
-    def skip(self, chrom, num=1):
+    def skip(self, chrom: str, num: int = 1) -> None:
         self(chrom, num)
         self._skipped[chrom] += num
 
-    def print(self):
+    def print(self) -> None:
         if self._chrom is not None:
-            count = "{:,}".format(self._count)
+            count = f"{self._count:,}"
             self._log.info("Processed %s sites on %s", count, self._chrom)
 
-    def __enter__(self, *args, **kwargs):
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, typ: object, value: object, traceback: object) -> None:
         self.print()
 
         for name, count in self._skipped.items():
-            count = "{:,}".format(count)
+            count = f"{count:,}"
             self._log.info("  - Skipped %s records on %r", count, name)
 
 
 # Reads file like GCF_000001405.39_GRCh38.p13_assembly_report.txt
-def read_assembly_report(filepath):
-    mapping = {}
+def read_assembly_report(filepath: str | Path) -> dict[str, str]:
+    mapping: dict[str, str] = {}
     with open_ro(filepath) as handle:
         # The header is the last comment
         for header, line in zip(handle, handle):
             if not line.startswith("#"):
                 break
         else:
-            assert False, filepath
+            raise RuntimeError(f"assembly report {filepath!r} is empty")
 
         header = header.lstrip("#").strip().split("\t")
         header = [name.replace("-", "_").lower() for name in header]
@@ -114,12 +122,12 @@ def read_assembly_report(filepath):
     return mapping
 
 
-def refseq_names_to_chr(log, counter, args):
+def refseq_names_to_chr(log: logging.Logger, counter: Counter, args: Namespace) -> None:
     log.info("Creating refseq<->chr contig name mapping from %r", args.assembly_report)
 
     print("RefSeq\tName")
     for refseq, name in read_assembly_report(args.assembly_report).items():
-        print("{}\t{}".format(refseq, name))
+        print(refseq, name, sep="\t")
 
 
 # https://www.ncbi.nlm.nih.gov/snp/docs/products/vcf/redesign/#tags_with_SOterm
@@ -143,14 +151,14 @@ DBSNP_HEADER = """\
 ##INFO=<ID=functions,Number=.,Type=String,Description="List of GO terms assosiated with this SNP in DBSNP.">"""
 
 
-def dbsnp_to_vcf(log, counter, args):
+def dbsnp_to_vcf(log: logging.Logger, counter: Counter, args: Namespace) -> None:
     log.info("Creating custom DBSNP annotation from %r", args.vcf)
     with pysam.VariantFile(args.vcf, threads=2) as handle:
         if args.assembly_report is not None:
             log.info("Reading genome assembly info from %r", args.assembly_report)
             mapping = read_assembly_report(args.assembly_report)
         else:
-            mapping = dict(zip(handle.header.contigs, handle.header.contigs))
+            mapping = {str(key): str(key) for key in handle.header.contigs}
 
         # Some fields are never used; this saves some time
         template = VCF_ROW_TEMPLATE.format(
@@ -173,7 +181,7 @@ def dbsnp_to_vcf(log, counter, args):
             else:
                 print(line)
 
-        def _grouper(record):
+        def _grouper(record: VariantRecord) -> tuple[str, int]:
             return (record.contig, record.pos)
 
         for (contig, pos), records in itertools.groupby(handle, key=_grouper):
@@ -184,11 +192,13 @@ def dbsnp_to_vcf(log, counter, args):
 
             contig = mapped_contig
             # ALT strings for a given REF; one or more SNPs/INDELS or None
-            alt_strings = collections.defaultdict(list)
+            alt_strings: dict[str | None, list[str]] = collections.defaultdict(list)
             # DBSNP may contain multiple records for the same REF/ALT combination,
             # if a SNP has been registered multiple times. These are combined into
             # a single record with relevant information aggregated
-            duplicate_records = collections.defaultdict(list)
+            duplicate_records: dict[
+                tuple[str | None, tuple[str, ...]], list[VariantRecord]
+            ] = collections.defaultdict(list)
 
             nrecords = 0
             for record in records:
@@ -199,7 +209,7 @@ def dbsnp_to_vcf(log, counter, args):
                 alt_strings[ref].append("/".join(alts))
                 duplicate_records[(ref, alts)].append(record)
 
-            for (ref, alts), records in duplicate_records.items():
+            for (ref, alts), records_group in duplicate_records.items():
                 print(
                     template.format(
                         chrom=contig,
@@ -207,7 +217,7 @@ def dbsnp_to_vcf(log, counter, args):
                         ref=ref,
                         alt=",".join(alts),
                         info=_dbsnp_info_string(
-                            records=records,
+                            records=records_group,
                             alt_string_set=alt_strings[ref],
                         ),
                     )
@@ -216,13 +226,17 @@ def dbsnp_to_vcf(log, counter, args):
             counter(contig, nrecords)
 
 
-def _dbsnp_info_string(records, alt_string_set):
-    ids = set()
-    info_keys = set()
+def _dbsnp_info_string(
+    records: Iterable[VariantRecord],
+    alt_string_set: Iterable[str],
+) -> str:
+    ids: set[str] = set()
+    info_keys: set[str] = set()
     for record in records:
-        assert record.id not in ids
-        ids.add(record.id)
-        info_keys.update(record.info)
+        if record.id is not None:
+            assert record.id not in ids
+            ids.add(record.id)
+            info_keys.update(record.info)
 
     # All ALT allele strings at the current site with matching REF
     info = [
@@ -240,26 +254,26 @@ def _dbsnp_info_string(records, alt_string_set):
     return "".join(info)
 
 
-THOUSAND_GENOMES_FIELDS = set(
-    (
-        "AN_EAS_unrel",
-        "AN_AMR_unrel",
-        "AN_EUR_unrel",
-        "AN_SAS_unrel",
-        "AN_AFR_unrel",
-        "AF_EUR_unrel",
-        "AF_EAS_unrel",
-        "AF_AMR_unrel",
-        "AF_SAS_unrel",
-        "AF_AFR_unrel",
-    )
-)
+THOUSAND_GENOMES_FIELDS = {
+    "AN_EAS_unrel",
+    "AN_AMR_unrel",
+    "AN_EUR_unrel",
+    "AN_SAS_unrel",
+    "AN_AFR_unrel",
+    "AF_EUR_unrel",
+    "AF_EAS_unrel",
+    "AF_AMR_unrel",
+    "AF_SAS_unrel",
+    "AF_AFR_unrel",
+}
 
 
-def thousand_genomes_to_vcf(log, counter, args):
-    def _repr_value(value):
+def thousand_genomes_to_vcf(
+    log: logging.Logger, counter: Counter, args: Namespace
+) -> int:
+    def _repr_value(value: object) -> str:
         if isinstance(value, float):
-            value = "{:.7f}".format(value)
+            value = f"{value:.7f}"
             if value == "0.0000000":
                 value = "0"
 
@@ -278,38 +292,36 @@ def thousand_genomes_to_vcf(log, counter, args):
     return 0
 
 
-GNOMAD_SITE_FIELDS = set(
-    (
-        "AN",
-        "AF",
-        "AN_ami",
-        "AF_ami",
-        "AN_oth",
-        "AF_oth",
-        "AN_afr",
-        "AF_afr",
-        "AN_sas",
-        "AF_sas",
-        "AN_raw",
-        "AF_raw",
-        "AN_asj",
-        "AF_asj",
-        "AN_fin",
-        "AF_fin",
-        "AN_amr",
-        "AF_amr",
-        "AN_nfe",
-        "AF_nfe",
-        "AN_eas",
-        "AF_eas",
-    )
-)
+GNOMAD_SITE_FIELDS = {
+    "AN",
+    "AF",
+    "AN_ami",
+    "AF_ami",
+    "AN_oth",
+    "AF_oth",
+    "AN_afr",
+    "AF_afr",
+    "AN_sas",
+    "AF_sas",
+    "AN_raw",
+    "AF_raw",
+    "AN_asj",
+    "AF_asj",
+    "AN_fin",
+    "AF_fin",
+    "AN_amr",
+    "AF_amr",
+    "AN_nfe",
+    "AF_nfe",
+    "AN_eas",
+    "AF_eas",
+}
 
 
-def gnomad_sites_to_vcf(log, counter, args):
-    def _repr_value(value):
+def gnomad_sites_to_vcf(log: logging.Logger, counter: Counter, args: Namespace) -> int:
+    def _repr_value(value: object) -> str:
         if isinstance(value, float):
-            value = "{:.5e}".format(value)
+            value = f"{value:.5e}"
             if value == "0.00000e+00":
                 value = "0"
 
@@ -328,7 +340,11 @@ def gnomad_sites_to_vcf(log, counter, args):
     return 0
 
 
-def gnomad_coverage_to_vcf(log, counter, args):
+def gnomad_coverage_to_vcf(
+    log: logging.Logger,
+    counter: Counter,
+    args: Namespace,
+) -> int:
     log.info("Creating custom gnomAD filters from %r", args.txt)
     with open_ro(args.txt) as handle:
         header = handle.readline().rstrip().split("\t")
@@ -378,19 +394,23 @@ class GeneRecord(NamedTuple):
     seqid: str
     start: int
     end: int
-    name: Optional[str]
-    id: Optional[str]
+    name: str | None
+    id: str | None
 
     @property
-    def preferred_name(self):
+    def preferred_name(self) -> str | None:
         return self.name or self.id
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.seqid}:{self.start}-{self.end}:{self.preferred_name}"
 
 
-def neighbouring_genes_to_bed(log, counter, args):
-    def _groupby(record):
+def neighbouring_genes_to_bed(
+    log: logging.Logger,
+    counter: Counter,
+    args: Namespace,
+) -> int:
+    def _groupby(record: GeneRecord) -> str:
         return record.seqid
 
     forward_and_reverse = (
@@ -399,11 +419,10 @@ def neighbouring_genes_to_bed(log, counter, args):
         ("down", iter_nearest_genes_downstream),
     )
 
-    genes = read_genes_from_gff(log, args.gff)
-    for seqid, genes in itertools.groupby(genes, _groupby):
+    for seqid, genes in itertools.groupby(read_genes_from_gff(log, args.gff), _groupby):
         genes = list(genes)
 
-        records = []
+        records: list[tuple[int, int, str, list[GeneRecord]]] = []
         for key, func in forward_and_reverse:
             for start, end, nearest in func(genes, nnearest=3):
                 records.append((start, end, key, nearest))
@@ -422,12 +441,18 @@ def neighbouring_genes_to_bed(log, counter, args):
     return 0
 
 
-def iter_nearest_genes_overlapping(genes, nnearest=3):
+def iter_nearest_genes_overlapping(
+    genes: list[GeneRecord],
+    nnearest: int = 3,
+) -> Iterator[tuple[int, int, list[GeneRecord]]]:
     for gene in genes:
-        yield gene.start, gene.end, (gene,)
+        yield gene.start, gene.end, [gene]
 
 
-def iter_nearest_genes_downstream(genes, nnearest=3):
+def iter_nearest_genes_downstream(
+    genes: list[GeneRecord],
+    nnearest: int = 3,
+) -> Iterator[tuple[int, int, list[GeneRecord]]]:
     genes.sort(key=lambda it: it.start)
 
     last_position = 1
@@ -439,7 +464,10 @@ def iter_nearest_genes_downstream(genes, nnearest=3):
         last_position = gene.start
 
 
-def iter_nearest_genes_upstream(genes, nnearest=3):
+def iter_nearest_genes_upstream(
+    genes: list[GeneRecord],
+    nnearest: int = 3,
+) -> Iterator[tuple[int, int, list[GeneRecord]]]:
     genes.sort(key=lambda it: it.end)
 
     last_position = genes[0].end + 1
@@ -455,7 +483,10 @@ def iter_nearest_genes_upstream(genes, nnearest=3):
     yield last_position, 2**29 - 1, genes[-3:]
 
 
-def read_genes_from_gff(log, filename):
+def read_genes_from_gff(
+    log: logging.Logger,
+    filename: str | Path,
+) -> Iterator[GeneRecord]:
     with open_ro(filename) as handle:
         for line in handle:
             if line.startswith("#"):
@@ -464,7 +495,7 @@ def read_genes_from_gff(log, filename):
             seqid, _, kind, start, end, _, _, _, attributes = line.split("\t")
 
             if kind == "gene":
-                attrs = {}
+                attrs: dict[str, str] = {}
                 for attribute in attributes.split(";"):
                     key, value = attribute.split("=")
                     attrs[key.strip()] = value.strip()
@@ -487,13 +518,13 @@ def read_genes_from_gff(log, filename):
 ########################################################################################
 
 
-def dbnsfp4_to_vcf(log, counter, args):
+def dbnsfp4_to_vcf(log: logging.Logger, counter: Counter, args: Namespace) -> None:
     log.info("loading annotation list from %r", str(args.annotations))
     yaml = YAML(typ="safe")
     with open(args.annotations) as handle:
         data = yaml.load(handle)
 
-    columns = []
+    columns: list[str] = []
     for settings in data.values():
         columns.extend(settings["Fields"])
 
@@ -512,7 +543,7 @@ def dbnsfp4_to_vcf(log, counter, args):
                     for line in handle:
                         row = dict(zip(header, line.rstrip().split("\t")))
 
-                        info = []
+                        info: list[str] = []
                         for key in columns:
                             value = row[key]
                             if value not in (".", ".;", "./."):
@@ -529,9 +560,7 @@ def dbnsfp4_to_vcf(log, counter, args):
                                 info.append("=")
                                 info.append(value)
 
-                        info = "".join(info)
-
-                        out = [
+                        print(
                             row["#chr"],
                             row["pos(1-based)"],
                             ".",
@@ -539,10 +568,9 @@ def dbnsfp4_to_vcf(log, counter, args):
                             row["alt"],
                             ".",
                             ".",
-                            info,
-                        ]
-
-                        print("\t".join(out))
+                            "".join(info),
+                            sep="\t",
+                        )
 
                         counter(row["#chr"])
 
@@ -550,14 +578,21 @@ def dbnsfp4_to_vcf(log, counter, args):
 ########################################################################################
 
 
-def reduce_vcf_file(counter, filepath, fields, repr_value=str, print_header=False):
-    def _repr_values(values):
-        strings = []
-        if not isinstance(values, tuple):
-            values = (values,)
-
-        for value in values:
-            strings.append(repr_value(value))
+def reduce_vcf_file(
+    *,
+    counter: Counter,
+    filepath: str,
+    fields: set[str],
+    repr_value: Callable[[object], str] = str,
+    print_header: bool = False,
+) -> None:
+    def _repr_values(values: object) -> str:
+        strings: list[str] = []
+        if isinstance(values, tuple):
+            for value in cast(tuple[object, ...], values):
+                strings.append(repr_value(value))
+        else:
+            strings.append(repr_value(values))
 
         return ",".join(strings)
 
@@ -576,11 +611,11 @@ def reduce_vcf_file(counter, filepath, fields, repr_value=str, print_header=Fals
             print(VCF_COLUMN_NAMES)
 
         for record in handle.fetch():
-            infos = []
+            infos: list[str] = []
             for key in fields:
                 value = record.info.get(key)
                 if value is not None:
-                    infos.append("{}={}".format(key, _repr_values(value)))
+                    infos.append(f"{key}={_repr_values(value)}")
 
             print(
                 VCF_ROW_TEMPLATE.format(
@@ -590,7 +625,7 @@ def reduce_vcf_file(counter, filepath, fields, repr_value=str, print_header=Fals
                     ref=record.ref,
                     alt=",".join(record.alts or "."),
                     qual=record.qual or ".",
-                    filter=",".join(record.filter or "."),
+                    filter=",".join(map(str, record.filter)) if record.filter else ".",
                     info=(";".join(infos) or "."),
                 )
             )
@@ -598,7 +633,7 @@ def reduce_vcf_file(counter, filepath, fields, repr_value=str, print_header=Fals
             counter(record.contig)
 
 
-def open_ro(filename: Union[str, Path]) -> IO[str]:
+def open_ro(filename: str | Path) -> IO[str]:
     """Opens a file for reading, transparently handling
     GZip and BZip2 compressed files. Returns a file handle."""
     handle = open(fspath(filename), "rb")
@@ -617,15 +652,12 @@ def open_ro(filename: Union[str, Path]) -> IO[str]:
         raise
 
 
-class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("width", 79)
-
-        super().__init__(*args, **kwargs)
-
-
 def parse_args(argv: list[str]) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(formatter_class=HelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=functools.partial(
+            argparse.ArgumentDefaultsHelpFormatter, width=78
+        )
+    )
     parser.set_defaults(command=None)
     subparsers = parser.add_subparsers()
 

@@ -278,9 +278,9 @@ class Annotator:
     def _count_genotypes(
         self, samples: list[dict[str, str]]
     ) -> dict[tuple[None, None] | tuple[int, int], int]:
-        counts: dict[
-            tuple[None, None] | tuple[int, int], int
-        ] = collections.defaultdict(int)
+        counts: dict[tuple[None, None] | tuple[int, int], int] = (
+            collections.defaultdict(int)
+        )
         for sample in samples:
             counts[parse_vcf_genotypes(sample.get("GT"))] += 1
 
