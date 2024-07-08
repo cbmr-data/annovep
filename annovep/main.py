@@ -56,6 +56,9 @@ def main(argv: list[str]) -> int:
         isatty=sys.stderr.isatty(),
     )
 
+    if args.do == "pre-process":
+        return preprocess_main(args)
+
     variables = {
         # Data folders
         "data-cache": args.data_cache,
@@ -82,8 +85,6 @@ def main(argv: list[str]) -> int:
 
     if args.do == "run":
         return pipeline_main(args, annotations)
-    elif args.do == "pre-process":
-        return preprocess_main(args, annotations)
     elif args.do == "post-process":
         return postprocess_main(args, annotations)
 

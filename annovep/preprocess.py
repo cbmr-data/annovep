@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from annovep.utils import open_ro
 
 if TYPE_CHECKING:
-    from annovep.annotation import Annotation
     from annovep.args import Args
 
 _RE_CONTIG_ID = re.compile("^(##contig=<.*ID=)([^,]+)(.*>)$", re.I)
@@ -37,7 +36,7 @@ def is_valid(sequence: str, whitelist: str = "ACGTNacgtn.,*") -> bool:
     return not set(sequence).difference(whitelist)
 
 
-def main(args: Args, anotations: list[Annotation]) -> int:
+def main(args: Args) -> int:
     n_decoys = 0
     n_bad_contigs = 0
     n_bad_contigs_vcf = 0
