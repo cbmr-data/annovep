@@ -153,7 +153,7 @@ def main(args: Args, annotations: list[Annotation]) -> int:
 
     any_errors = False
     for annotation in annotations:
-        log.info("Checking files for annotation %s", annotation.name)
+        log.debug("Checking files for annotation %s", annotation.name)
         for filename in annotation.files:
             if not os.path.exists(filename):
                 log.error("Required %s file %r not found", annotation.name, filename)

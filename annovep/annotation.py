@@ -350,7 +350,7 @@ def load_annotations(
     annotations: Dict[str, Annotation] = {}
     with access_resources("annotations") as built_in:
         for filepath in _collect_yaml_files([built_in, *filepaths]):
-            log.info("reading annotation settings from %s", filepath)
+            log.debug("reading annotation settings from %s", filepath)
             with filepath.open("rt") as handle:
                 data: object = yaml.load(handle)
 
