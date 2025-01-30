@@ -1,7 +1,3 @@
-[tool.black]
-required-version = 23
-target-versions = ["py37", "py38", "py39", "py310", "py310", "py311", "py312"]
-
 [tool.pyright]
 include = ["annovep", "bin/annovep", "scripts"]
 
@@ -12,66 +8,25 @@ reportUnnecessaryIsInstance = "none"
 [tool.ruff]
 target-version = "py37"
 
-select = [
-    "A",     # flake8-builtins
-    "AIR",   # Airflow
-    "ANN",   # flake8-annotations
-    "ASYNC", # flake8-async
-    "B",     # flake8-bugbear
-    "BLE",   # flake8-blind-except
-    "C4",    # flake8-comprehensions
-    # "CPY", # flake8-copyright -- requires `--preview`
-    "DTZ",  # flake8-datetimez
-    "E",    # Error
-    "E",    # pycodestyle
-    "EM",   # flake8-errmsg
-    "ERA",  # eradicate
-    "EXE",  # flake8-executable
-    "F",    # Pyflakes
-    "FA",   # flake8-future-annotations
-    "FBT",  # flake8-boolean-trap
-    "FLY",  # flynt
-    "G",    # flake8-logging-format
-    "I",    # isort
-    "ICN",  # flake8-import-conventions
-    "INP",  # flake8-no-pep420
-    "INT",  # flake8-gettext
-    "ISC",  # flake8-implicit-str-concat
-    "N",    # pep8-naming
-    "PERF", # Perflint
-    "PGH",  # pygrep-hooks
-    "PIE",  # flake8-pie
-    "PL",   # Pylint
-    "PT",   # flake8-pytest-style
-    # "PTH",  # flake8-use-pathlib
-    "PYI",  # flake8-pyi
-    "Q",    # flake8-quotes
-    "RET",  # flake8-return
-    "RSE",  # flake8-raise
-    "RUF",  # Ruff-specific rules
-    "S",    # flake8-bandit
-    "SIM",  # flake8-simplify
-    "SLF",  # flake8-self
-    "SLOT", # flake8-slots
-    "T10",  # flake8-debugger
-    "TCH",  # flake8-type-checking
-    "TID",  # flake8-tidy-imports
-    "TRY",  # tryceratops
-    "UP",   # pyupgrade
-    "W",    # pycodestyl
-    "W",    # Warning
-    "YTT",  # flake8-2020
-]
+[tool.ruff.lint]
+
+select = ["ALL"]
 
 ignore = [
     "A003",   # Class attribute is shadowing a Python builtin
-    "S101",   # assert -- Use of assert detected
-    "ANN101", # missing-type-self -- Missing type annotation for `self` in method
-    "ANN102", # missing-type-cls -- Missing type annotation for `cls` in classmethod
+    "ARG",    # flake8-unused-arguments
+    "C90",    # mccabe
+    "COM812", # missing-trailing-comma
+    "D",      # pydocstyle
     "EM101",  # raw-string-in-exception -- Exception must not use a string literal
     "EM102",  # f-string-in-exception -- Exception must not use an f-string literal
     "EM103",  # dot-format-in-exception -- Exception must not use a `.format` string
+    "FIX",    # flake8-fixme
+    "PTH",    # flake8-use-pathlib
+    "S101",   # assert -- Use of assert detected
     "S603",   # subprocess-without-shell-equals-true
+    "T20",    # flake8-print
+    "TD",     # flake8-todos
     "TRY003", # raise-vanilla-args
     "TRY400", # error-instead-of-exception
     # Disabled due to too many false positives

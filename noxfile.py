@@ -15,7 +15,7 @@ SOURCES = (
 )
 
 
-RUFF_REQUIREMENT = "ruff==0.1.8"
+RUFF_REQUIREMENT = "ruff==0.9.3"
 
 
 @nox.session
@@ -37,5 +37,5 @@ def lints(session: nox.Session) -> None:
 def typing(session: nox.Session) -> None:
     session.install(".")
     session.install("nox~=2023.4.22")
-    session.install("pyright==1.1.340")
+    session.install("pyright==v1.1.393")
     session.run("pyright", *SOURCES)
