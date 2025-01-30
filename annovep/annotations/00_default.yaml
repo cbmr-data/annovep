@@ -241,6 +241,14 @@ HGVS:
     - Input: "hgvs_offset"
       Output: "HGVS_offset"
       Help: "HGVS genomic offset"
+    - Input: "hgvsc"
+      Source: canonical_consequence
+      Output: "HGVSc_canonical"
+      Help: "HGVS ID for coding sequence"
+    - Input: "hgvsp"
+      Source: canonical_consequence
+      Output: "HGVSp_canonical"
+      Help: "HGVS ID for protein sequence"
   Enabled: false
 
 # Runtime ~= 2.4x
