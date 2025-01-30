@@ -45,8 +45,4 @@ def ranks() -> dict[str, int]:
         "intergenic_variant",
     ]
 
-    ranks: dict[str, int] = collections.OrderedDict()
-    for rank, consequence in enumerate(consequences):
-        ranks[consequence] = rank
-
-    return ranks
+    return collections.OrderedDict((k, v) for v, k in enumerate(consequences))

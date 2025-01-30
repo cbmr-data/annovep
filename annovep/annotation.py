@@ -73,7 +73,7 @@ class _AnnotationBaseModel(BaseModel):
     rank: int = Field(alias="Rank", default=0)
     fieldtype: FieldType = Field(alias="FieldType", default="str")
     digits: int = Field(alias="Digits", default=-1)
-    fields: List[_AnnotationFieldModel] = Field(alias="Fields", default_factory=dict)
+    fields: List[_AnnotationFieldModel] = Field(alias="Fields", default_factory=list)
     enabled: Literal[True, False, "mandatory"] = Field(alias="Enabled", default=True)
     options: List[str] = Field(alias="Options", default_factory=list)
     # Optional data source

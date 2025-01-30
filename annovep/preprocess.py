@@ -9,7 +9,7 @@ from annovep.utils import open_ro
 if TYPE_CHECKING:
     from annovep.args import Args
 
-_RE_CONTIG_ID = re.compile("^(##contig=<.*ID=)([^,]+)(.*>)$", re.I)
+_RE_CONTIG_ID = re.compile("^(##contig=<.*ID=)([^,]+)(.*>)$", re.IGNORECASE)
 
 
 def encode_contig_name(name: str) -> str:

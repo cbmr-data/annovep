@@ -487,9 +487,9 @@ class SQLOutput(Output):
     @staticmethod
     def _build_consequence_ranks() -> dict[object, int | None]:
         """Returns consequences with a human friendly ranking: bad > insignificant."""
-        human_friendly_ranks: dict[object, int | None] = collections.OrderedDict()
-        for rank, name in enumerate(reversed(list(consequences.ranks()))):
-            human_friendly_ranks[name] = rank
+        human_friendly_ranks: dict[object, int | None] = collections.OrderedDict(
+            (k, v) for v, k in enumerate(reversed(list(consequences.ranks())))
+        )
 
         human_friendly_ranks[None] = None
         return human_friendly_ranks

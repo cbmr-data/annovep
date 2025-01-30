@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf8 -*-
 import argparse
 import collections
 import io
@@ -442,8 +441,8 @@ def main(argv: List[str]):
 
             header.extend(common_columns)
 
-            filename = "{}.{}.tsv".format(args.output, family.name)
-            handle = open(filename, "wt")
+            filename = f"{args.output}.{family.name}.tsv"
+            handle = open(filename, "w")
             handles[family.name] = handle
             print(*header, sep="\t", file=handle)
 

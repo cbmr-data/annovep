@@ -1,5 +1,5 @@
-# WORKAROUND: pydantic requies List, Union, etc, so disable ruff lints:
-# ruff: noqa: UP006,UP007,TCH002
+# WORKAROUND: pydantic requires List, Union, etc., so disable ruff lints:
+# ruff: noqa: UP006,UP007,TC002
 from __future__ import annotations
 
 import argparse

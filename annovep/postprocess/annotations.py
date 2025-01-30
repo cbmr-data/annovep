@@ -44,8 +44,8 @@ class Annotator:
         "_counter",
         "_fields_collected",
         "_fields_derived",
-        "_liftover_cache",
         "_liftover",
+        "_liftover_cache",
         "_strategy",
         "fields",
         "groups",
@@ -519,10 +519,7 @@ class Annotator:
                         values.append("x")
 
                 # Normalize x/1 to 1/x
-                if values[0] == "x":
-                    values = values[::-1]
-
-                genotypes = "/".join(values)
+                genotypes = "/".join(reversed(values) if values[0] == "x" else values)
 
             result[field.output_key] = genotypes
 

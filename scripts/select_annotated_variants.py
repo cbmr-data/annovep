@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf8 -*-
 import argparse
 import bz2
 import collections
@@ -345,7 +344,7 @@ def main(argv):
 
         return 1
 
-    tabix_file = "{}.tbi".format(args.genotypes)
+    tabix_file = f"{args.genotypes}.tbi"
     if not args.genotypes.is_file():
         log.error("Genotypes do not exist/are not a file: %s", quote(args.genotypes))
         return 1
@@ -373,8 +372,8 @@ def main(argv):
     log.info("Reading genotypes from %s", quote(args.genotypes))
     log.info("Reading annotations from %s", quote(args.annotations))
 
-    out_vcf_name = "{}.vcf".format(args.output)
-    out_tsv_name = "{}.tsv".format(args.output)
+    out_vcf_name = f"{args.output}.vcf"
+    out_tsv_name = f"{args.output}.tsv"
     log.info("Writing filtered genotypes to %s", quote(out_vcf_name))
     log.info("Writing filtered annotations to %s", quote(out_tsv_name))
 
@@ -445,11 +444,11 @@ def main(argv):
 
     total = n_filtered_consequence + n_filtered_filter + n_filtered_gnomAD + n_selected
 
-    log.info("Processed {:,} variants".format(total))
-    log.info("{:,} variants excluded by FILTER".format(n_filtered_filter))
-    log.info("{:,} variants excluded by gnomAD max".format(n_filtered_gnomAD))
-    log.info("{:,} variants excluded by consequence".format(n_filtered_consequence))
-    log.info("{:,} variants selected".format(n_selected))
+    log.info(f"Processed {total:,} variants")
+    log.info(f"{n_filtered_filter:,} variants excluded by FILTER")
+    log.info(f"{n_filtered_gnomAD:,} variants excluded by gnomAD max")
+    log.info(f"{n_filtered_consequence:,} variants excluded by consequence")
+    log.info(f"{n_selected:,} variants selected")
 
     return 0
 

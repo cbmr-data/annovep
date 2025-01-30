@@ -102,7 +102,7 @@ class VEPReader:
     def _read_record(
         self,
         line: bytes,
-        nan_re: re.Pattern[bytes] = re.compile(rb":(-)?NaN\b", flags=re.I),
+        nan_re: re.Pattern[bytes] = re.compile(rb":(-)?NaN\b", flags=re.IGNORECASE),
     ) -> ParsedRecord:
         # Workaround for non-standard JSON output observed in some records, where
         # an expected string value was -nan. Python accepts "NaN", but null seems
